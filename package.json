@@ -1,24 +1,23 @@
 {
   "type": "module",
   "scripts": {
-    "lint:client": "npm --prefix client run lint",
-    "lint:server": "npm --prefix server run lint",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write .",
     "prepare": "husky"
   },
   "lint-staged": {
     "client/**/*.{ts,tsx}": [
-      "eslint --config ./client/eslint.config.js --fix",
+      "eslint --fix",
       "prettier --write"
     ],
     "server/**/*.{ts}": [
-      "eslint --config ./server/eslint.config.js --fix",
+      "eslint --fix",
       "prettier --write"
     ]
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
     "@vitejs/plugin-react": "^5.1.4",
@@ -28,6 +27,10 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.0",
+    "globals": "^17.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "ts-node-dev": "^2.0.0"
