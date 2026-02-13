@@ -10,7 +10,7 @@ interface Config {
   JWT_EXPIRES_IN: string;
   DB_URL: string;
   REDIS_URL: string;
-  FRONTEND_URL: string;
+  CLIENT_URL: string;
   EMAIL_HOST: string;
   EMAIL_PORT: number;
   EMAIL_USER: string;
@@ -24,7 +24,7 @@ const config: Config = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "1h",
   DB_URL: process.env.DB_URL || "mongodb://localhost:27017/devcheck",
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
-  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000",
+  CLIENT_URL: process.env.CLIENT_URL || "http://localhost:3000",
   EMAIL_HOST: process.env.EMAIL_HOST || "smtp.gmail.com",
   EMAIL_PORT: Number(process.env.EMAIL_PORT) || 587,
   EMAIL_USER: process.env.EMAIL_USER || "your_email@gmail.com",
