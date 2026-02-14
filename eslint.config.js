@@ -17,7 +17,7 @@ export default defineConfig([
       ecmaVersion: 2020,
       sourceType: "module",
       globals: globals.browser,
-      parser: tsParser, // 👈 pass the actual parser module
+      parser: tsParser,
     },
     plugins: {
       "@typescript-eslint": tsPlugin,
@@ -28,6 +28,7 @@ export default defineConfig([
       ...tsPlugin.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...reactRefresh.configs.vite.rules,
+      "@typescript-eslint/no-explicit-any": "error"
     },
   },
 
@@ -38,13 +39,14 @@ export default defineConfig([
       ecmaVersion: 2020,
       sourceType: "module",
       globals: globals.node,
-      parser: tsParser, // 👈 pass the actual parser module
+      parser: tsParser,
     },
     plugins: {
       "@typescript-eslint": tsPlugin,
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "error"
     },
   },
 ]);
