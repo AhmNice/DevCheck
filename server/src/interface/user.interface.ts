@@ -4,9 +4,9 @@ export default interface UserInterface {
   email: string;
   password: string;
   bio: string;
-  profilePicture: string;
+  profile_picture: string;
   account_role: "user" | "admin";
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
+  job_role: string;
+  created_at: Date;
+  updated_at: Date;
 }

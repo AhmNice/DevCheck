@@ -1,7 +1,5 @@
-// src/utils/AsyncHandler.ts
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
-// Fully typed async handler without using any `any` in your function
 export const asyncHandler = <
   ReqBody = unknown,
   ResBody = unknown,

@@ -1,6 +1,6 @@
-// src/utils/ErrorHandler.ts
 import { Request, Response } from "express";
-
+import config from "../config/config.js";
+const isProduction = config.NODE_ENV === "production";
 export class APIError extends Error {
   public statusCode: number;
 
@@ -12,6 +12,26 @@ export class APIError extends Error {
   }
 }
 
+export class NotFoundError extends APIError {
+  constructor(message = "Resource not found") {
+    super(message, 404, "NotFoundError");
+  }
+}
+export class BadRequestError extends APIError {
+  constructor(message = "Bad request") {
+    super(message, 400, "BadRequestError");
+  }
+}
+export class UnauthorizedError extends APIError {
+  constructor(message = "Unauthorized") {
+    super(message, 401, "UnauthorizedError");
+  }
+}
+export class ForbiddenError extends APIError {
+  constructor(message = "Forbidden") {
+    super(message, 403, "ForbiddenError");
+  }
+}
 export const globalErrorHandler = (
   err: unknown,
   req: Request,
@@ -29,6 +49,6 @@ export const globalErrorHandler = (
 
   res.status(status).json({
     success: false,
-    message,
+    message: isProduction && status === 500 ? "Something went wrong" : message,
   });
 };
