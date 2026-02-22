@@ -1,28 +1,36 @@
 import { defaultPool, pool } from "../config/db.config.js";
 import config from "../config/config.js";
-export async function createDatabase() {
+import format from "pg-format";
+import {
+  isPgDuplicateDatabaseError,
+  validateDatabaseName,
+} from "../utils/db_helper.js";
+export async function createDatabase(): Promise<boolean> {
   try {
-    const checkDbQuery = `SELECT 1 FROM pg_database WHERE datname = $1`;
-    const checkDbResult = await defaultPool.query(checkDbQuery, [
-      config.DB_NAME,
-    ]);
-    if (checkDbResult.rowCount === 0) {
-      const createDbQuery = `CREATE DATABASE ${config.DB_NAME}`;
-      await defaultPool.query(createDbQuery);
-      console.log(`Database ${config.DB_NAME} created successfully.`);
+    validateDatabaseName(config.DB_NAME);
+    const saveDbName = format.ident(config.DB_NAME);
+    await defaultPool.query(`CREATE DATABASE ${saveDbName}`);
+    console.log(`Database ${config.DB_NAME} created successfully.`);
+    return true;
+  } catch (error: unknown) {
+    if (isPgDuplicateDatabaseError(error)) {
+      console.log(
+        `Database ${config.DB_NAME} already exists. Skipping creation.`,
+      );
+      return false;
     } else {
-      console.log(`Database ${config.DB_NAME} already exists.`);
+      console.error("Error creating database:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Error creating database:", error);
   } finally {
     await defaultPool.end();
   }
 }
-export const createTable = async () => {
+
+export const createTables = async () => {
   try {
-    await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
     await pool.query(`BEGIN`);
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
 
     // create schemas
     await pool.query(`CREATE SCHEMA IF NOT EXISTS core`);
@@ -41,7 +49,13 @@ export const createTable = async () => {
     )`);
     await pool.query(`COMMIT`);
   } catch (error) {
-    await pool.query(`ROLLBACK`);
-    console.error("Error creating tables:", error);
+    try {
+      await pool.query(`ROLLBACK`);
+    } catch (rollbackError) {
+      console.error("Error during ROLLBACK:", rollbackError);
+    }
+    throw error;
+  } finally {
+    pool.end();
   }
 };
