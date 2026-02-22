@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
 export const asyncHandler = <
-  ReqBody = unknown,
+  ReqParams = Record<string, string>,
   ResBody = unknown,
+  ReqBody = unknown,
   ReqQuery = Record<string, unknown>,
   Locals extends Record<string, string | number | boolean> = Record<
     string,
@@ -10,11 +11,11 @@ export const asyncHandler = <
   >,
 >(
   fn: (
-    req: Request<ReqQuery, ResBody, ReqBody, Locals>,
+    req: Request<ReqParams, ResBody, ReqBody, ReqQuery>,
     res: Response<ResBody, Locals>,
     next: NextFunction,
   ) => Promise<void>,
-): RequestHandler<ReqQuery, ResBody, ReqBody, Locals> => {
+): RequestHandler<ReqParams, ResBody, ReqBody, ReqQuery> => {
   return (req, res, next) => {
     fn(req, res as Response<ResBody, Locals>, next).catch(next);
   };

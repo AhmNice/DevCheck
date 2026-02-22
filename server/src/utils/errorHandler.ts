@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import config from "../config/config.js";
 const isProduction = config.NODE_ENV === "production";
 export class APIError extends Error {
@@ -36,6 +36,7 @@ export const globalErrorHandler = (
   err: unknown,
   req: Request,
   res: Response,
+  _next: NextFunction,
 ): void => {
   let status = 500;
   let message = "Internal Server Error";

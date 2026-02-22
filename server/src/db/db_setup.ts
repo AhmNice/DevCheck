@@ -22,8 +22,6 @@ export async function createDatabase(): Promise<boolean> {
       console.error("Error creating database:", error);
       throw error;
     }
-  } finally {
-    await defaultPool.end();
   }
 }
 
