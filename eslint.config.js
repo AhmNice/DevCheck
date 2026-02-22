@@ -28,7 +28,7 @@ export default defineConfig([
       ...tsPlugin.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...reactRefresh.configs.vite.rules,
-      "@typescript-eslint/no-explicit-any": "error"
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 
@@ -46,7 +46,14 @@ export default defineConfig([
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      "@typescript-eslint/no-explicit-any": "error"
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 ]);
