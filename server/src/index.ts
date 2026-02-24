@@ -1,14 +1,17 @@
+import passport from "passport";
 import app from "./app.js";
-import config from "./config/config/config.js";
 import { pool } from "./config/db.config.js";
 import { connect_database } from "./db/db_connect.js";
 import authRouter from "./routes/auth.route.js";
 import healthRouter from "./routes/health.route.js";
 import { globalErrorHandler } from "./utils/errorHandler.js";
-
+import "./auth/google_oauth.js";
+import testRouter from "./routes/test.route.js";
+import config from "./config/config.js";
 app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
-
+app.use("/api/test", testRouter);
+app.use(passport.initialize());
 app.use(globalErrorHandler);
 let server: ReturnType<typeof app.listen>;
 

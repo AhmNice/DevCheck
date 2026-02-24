@@ -34,13 +34,20 @@ export const createTables = async () => {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS core`);
     // create tables
     await pool.query(`CREATE TABLE IF NOT EXISTS core.users (
-      id SERIAL PRIMARY KEY,
+      _id UUID  PRIMARY KEY DEFAULT gen_random_uuid(),
+      google_id VARCHAR(255) UNIQUE,
+      github_id VARCHAR(255) UNIQUE,
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
       bio TEXT,
       profile_picture TEXT,
       account_role VARCHAR(50) NOT NULL CHECK (account_role IN ('user', 'admin')),
+      otp VARCHAR(10),
+      otp_expiry TIMESTAMP,
+      is_verified BOOLEAN DEFAULT FALSE,
+      restPassword_token VARCHAR(255),
+      resetPassword_token_expiry TIMESTAMP,
       role VARCHAR(255),
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
