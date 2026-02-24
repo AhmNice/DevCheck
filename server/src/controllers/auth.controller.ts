@@ -2,17 +2,22 @@ import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../model/User.js";
 import { BadRequestError } from "../utils/errorHandler.js";
-import { generateOTP } from "../utils/codeGenerator.js";
+import {
+  generateOTP,
+  generateResetPasswordToken,
+} from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
 import { createSession } from "../utils/session.js";
 import passport from "passport";
 import {
   sendOTPEmail,
   sendPasswordResetEmail,
+  sendPasswordResetRequestEmail,
   sendWelcomeEmail,
 } from "../mail/service.js";
 import config from "../config/config.js";
 import UserInterface from "../interface/user.interface.js";
+import crypto from "crypto";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
@@ -131,7 +136,14 @@ export const googleAuthCallback = (
           },
           res,
         );
-        const { password: _password, ...cleanedUser } = user;
+        const {
+          password: _password,
+          otp: _otp,
+          otp_expiry: _otp_expiry,
+          resetPassword_token: _resetPassword_token,
+          resetPassword_token_expiry: _resetPassword_token_expiry,
+          ...cleanedUser
+        } = user;
         return res.json({
           success: true,
           message: "Google authentication successful",
@@ -143,29 +155,111 @@ export const googleAuthCallback = (
     },
   )(req, res, next);
 };
-// export const githubAuthCallback = (req: Request, res: Response) => {
-//   passport.authenticate(
-//     "github",
-//     { session: false, failureRedirect: "/login" },
-//     (err, user) => {
-//       if (err || !user) {
-//         throw new BadRequestError("GitHub authentication failed");
-//       }
-//       createSession(
-//         {
-//           user_id: user._id,
-//           userName: user.name,
-//           email: user.email,
-//           role: user.account_role,
-//         },
-//         res,
-//       );
+export const githubAuthCallback = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  passport.authenticate(
+    "github",
+    { session: false },
+    (err: undefined, user: UserInterface) => {
+      if (err) {
+        return next(err);
+      }
 
-//       return res.json({
-//         success: true,
-//         message: "GitHub authentication successful",
-//         user,
-//       });
-//     },
-//   )(req, res);
-// };
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "github authentication failed: User not found",
+        });
+      }
+
+      try {
+        createSession(
+          {
+            user_id: user._id,
+            userName: user.name,
+            email: user.email,
+            role: user.account_role,
+          },
+          res,
+        );
+        const {
+          password: _password,
+          otp: _otp,
+          otp_expiry: _otp_expiry,
+          resetPassword_token: _resetPassword_token,
+          resetPassword_token_expiry: _resetPassword_token_expiry,
+          ...cleanedUser
+        } = user;
+        return res.json({
+          success: true,
+          message: "github authentication successful",
+          user: cleanedUser,
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
+  )(req, res, next);
+};
+export const requestPasswordReset = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const user = await User.findByEmail(email);
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+    const token = generateResetPasswordToken();
+
+    await User.updateUserByEmail(email, {
+      resetPassword_token: token.hashedToken,
+      resetPassword_token_expiry: token.expiresAt,
+    });
+    await sendPasswordResetRequestEmail(
+      user,
+      `${config.CLIENT_URL}/reset-password/${token.token}`,
+      "1 hour",
+    );
+    res.json({
+      success: true,
+      message: "Password reset link has been sent to your email",
+    });
+  },
+);
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { token } = req.query;
+    const { newPassword } = req.body;
+    if (!token || typeof token !== "string") {
+      throw new BadRequestError("Invalid or missing token");
+    }
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findByResetPasswordToken(hashedToken);
+    if (!user) {
+      throw new BadRequestError("Invalid or expired token");
+    }
+    if (
+      user.resetPassword_token_expiry &&
+      user.resetPassword_token_expiry < new Date()
+    ) {
+      throw new BadRequestError("Invalid or expired token");
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await User.updateUserByEmail(user.email, {
+      password: passwordHash,
+      resetPassword_token: null,
+      resetPassword_token_expiry: null,
+    });
+    await sendPasswordResetEmail(
+      { name: user.name, email: user.email },
+      `${config.CLIENT_URL}/support`,
+      `${config.CLIENT_URL}/login`,
+    );
+    res.json({
+      success: true,
+      message: "Password has been reset successfully",
+    });
+  },
+);

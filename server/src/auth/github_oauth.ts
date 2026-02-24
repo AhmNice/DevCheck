@@ -1,8 +1,10 @@
 import passport from "passport";
-import { Strategy as GitHubStrategy, Profile } from "passport-google-oauth20";
+import { Strategy as GitHubStrategy, Profile } from "passport-github2";
 import { BadRequestError } from "../utils/errorHandler.js";
 import { User } from "../model/User.js";
 import UserInterface from "../interface/user.interface.js";
+import { generateRandomPassword } from "../utils/codeGenerator.js";
+import bcrypt from "bcrypt";
 
 type UserType = Pick<
   UserInterface,
@@ -25,29 +27,47 @@ passport.use(
     },
     async (accessToken, refreshToken, profile: Profile, done) => {
       try {
-        const email = profile.emails?.[0].value;
+        console.log("GitHub profile:", profile);
+
+        const email =
+          profile.emails?.find((e) => e.primary && e.verified)?.value ||
+          profile._json.email;
+        console.log("Extracted email:", email);
         if (!email) {
-          throw new BadRequestError("GitHub account does not have an email");
+          return done(
+            new BadRequestError(
+              "We couldn't access your GitHub email. Make sure it's public or allow email access.",
+            ),
+          );
         }
+
+        const randomPassword = generateRandomPassword();
+        const passwordHash = await bcrypt.hash(randomPassword, 10);
+
         const user: UserType = {
           github_id: profile.id,
-          name: profile.displayName || profile.username!,
-          email: email,
-          profile_picture: profile.photos?.[0].value || "",
-          password: null,
-          account_role: "user",
+          name: profile.displayName || profile.username || "Unknown",
+          email,
+          profile_picture: profile.photos?.[0]?.value || "",
+          password: passwordHash,
+          account_role: "user" as const,
           google_id: null,
         };
-        const existingUser = await User.findByGitHubId(profile.id);
+
+        let existingUser = await User.findByGitHubId(profile.id);
         if (!existingUser) {
           const newUser = new User(user);
-          await newUser.githubSave();
+          existingUser = await newUser.githubSave();
         }
-        done(null, user);
+
+        done(null, existingUser);
       } catch (error) {
-        done(error, undefined);
-        throw new BadRequestError("Github authentication failed");
+        console.error("GitHub OAuth error:", error);
+        return done(new BadRequestError("Github authentication failed"));
       }
     },
   ),
 );
+
+console.log("Github OAuth strategy configured");
+console.log("Github OAuth strategy configured");

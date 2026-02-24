@@ -2,6 +2,7 @@ import { transporter, sender } from "../config/mail.config.js";
 import UserInterface from "../interface/user.interface.js";
 import {
   generateOtpEmailTemplate,
+  generateResetPasswordRequestEmailTemplate,
   generateResetPasswordSuccessEmailTemplate,
   generateWelcomeEmailTemplate,
 } from "./email.template.js";
@@ -75,6 +76,31 @@ export const sendPasswordResetEmail = async (
   } catch (error) {
     throw new Error(
       "Failed to send password reset email: " + (error as Error).message,
+    );
+  }
+};
+export const sendPasswordResetRequestEmail = async (
+  user: UserType,
+  resetLink: string,
+  expiresIn: string = "1 hour",
+) => {
+  const html = generateResetPasswordRequestEmailTemplate({
+    userName: user.name,
+    resetLink,
+    expiresIn,
+  });
+  try {
+    await transporter.sendMail(
+      mailOption({
+        email: user.email,
+        subject: "DevCheck - Reset Password Request",
+        html,
+      }),
+    );
+  } catch (error) {
+    throw new Error(
+      "Failed to send password reset request email: " +
+        (error as Error).message,
     );
   }
 };

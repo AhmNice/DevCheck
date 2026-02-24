@@ -2,6 +2,7 @@ import express from "express";
 
 const authRouter = express.Router();
 import {
+  githubAuthCallback,
   // githubAuthCallback,
   googleAuthCallback,
   login,
@@ -40,9 +41,9 @@ authRouter.get(
 );
 authRouter.get(
   "/github-auth",
-  passport.authenticate("github", { scope: ["profile", "email"] }),
+  passport.authenticate("github", { scope: ["user:email"] }),
 );
 authRouter.get("/google/callback", googleAuthCallback);
-// authRouter.get("/github/callback", githubAuthCallback);
+authRouter.get("/github/callback", githubAuthCallback);
 
 export default authRouter;

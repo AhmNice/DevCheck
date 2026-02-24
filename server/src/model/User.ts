@@ -239,4 +239,30 @@ export class User implements UserType {
     }
     return result.rows[0];
   }
+  static async findByResetPasswordToken(token: string) {
+    const query = `
+      SELECT * FROM core.users WHERE resetPassword_token = $1 AND resetPassword_token_expiry > NOW()
+    `;
+    let result;
+    try {
+      result = await pool.query(query, [token]);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding user by reset password token: " +
+          (error as Error).message,
+      );
+    }
+    if (!result.rows.length) {
+      return null;
+    }
+    const {
+      password: _password,
+      otp: _otp,
+      otp_expiry: _otp_expiry,
+      resetPassword_token: _resetPassword_token,
+      resetPassword_token_expiry: _resetPassword_token_expiry,
+      ...cleanedUser
+    } = result.rows[0];
+    return cleanedUser;
+  }
 }
