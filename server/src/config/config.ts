@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { SignOptions } from "jsonwebtoken";
 dotenv.config({
   quiet: true,
 });
@@ -7,7 +8,7 @@ interface Config {
   PORT: number;
   NODE_ENV: string;
   JWT_SECRET: string;
-  JWT_EXPIRES_IN: string;
+  JWT_EXPIRES_IN: SignOptions["expiresIn"];
   DB_URL: string;
   DB_HOST: string;
   DB_PORT: number;
@@ -20,13 +21,20 @@ interface Config {
   EMAIL_PORT: number;
   EMAIL_USER: string;
   EMAIL_PASS: string;
+  EMAIL_SERVICE: string;
+  SESSION_COOKIE_NAME: string;
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
 }
 
 const config: Config = {
-  PORT: Number(process.env.PORT)!,
-  NODE_ENV: process.env.NODE_ENV!,
-  JWT_SECRET: process.env.JWT_SECRET!,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN!,
+  PORT: Number(process.env.PORT) || 5000,
+  NODE_ENV: process.env.NODE_ENV || "development",
+  JWT_SECRET: process.env.JWT_SECRET || "supersecret",
+  JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN ||
+    "7d") as SignOptions["expiresIn"],
   DB_URL: process.env.DB_URL!,
   DB_HOST: process.env.DB_HOST!,
   DB_PORT: Number(process.env.DB_PORT)!,
@@ -39,5 +47,11 @@ const config: Config = {
   EMAIL_PORT: Number(process.env.EMAIL_PORT)!,
   EMAIL_USER: process.env.EMAIL_USER!,
   EMAIL_PASS: process.env.EMAIL_PASS!,
+  EMAIL_SERVICE: process.env.EMAIL_SERVICE!,
+  SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME || "devcheck_session",
+  GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID!,
+  GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET!,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
 };
 export default config;

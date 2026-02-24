@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
-
-import config from "./config/config/config.js";
+import config from "./config/config.js";
 
 const app = express();
 app.use(
