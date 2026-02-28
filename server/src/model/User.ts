@@ -65,6 +65,29 @@ export class User implements UserType {
     } = result.rows[0];
     return cleanedUser;
   }
+  static async findById(user_id: string) {
+    const query = `SELECT * FROM core.users WHERE _id = $1`;
+    let result;
+    try {
+      result = await pool.query(query, [user_id]);
+      if (!result.rows.length) {
+        return null;
+      }
+      const {
+        password: _password,
+        otp: _otp,
+        otp_expiry: _otp_expiry,
+        resetPassword_token: _resetPassword_token,
+        resetPassword_token_expiry: _resetPassword_token_expiry,
+        ...cleanedUser
+      } = result.rows[0];
+      return cleanedUser;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding user: " + (error as Error).message,
+      );
+    }
+  }
   static async findByGoogleId(googleId: string) {
     const query = `
       SELECT * FROM core.users WHERE google_id = $1
@@ -220,9 +243,11 @@ export class User implements UserType {
     let index = 1;
 
     for (const [key, value] of Object.entries(updates)) {
-      fields.push(`${key} = $${index}`);
-      values.push(value);
-      index++;
+      if (value !== undefined) {
+        fields.push(`${key} = $${index}`);
+        values.push(value);
+        index++;
+      }
     }
     if (fields.length === 0) {
       throw new BadRequestError("No fields to update");
