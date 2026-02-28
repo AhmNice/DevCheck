@@ -58,4 +58,3 @@ passport.use(
     },
   ),
 );
-console.log("Google OAuth strategy configured");

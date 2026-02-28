@@ -5,6 +5,7 @@ import {
   isPgDuplicateDatabaseError,
   validateDatabaseName,
 } from "../utils/db_helper.js";
+
 export async function createDatabase(): Promise<boolean> {
   try {
     validateDatabaseName(config.DB_NAME);
@@ -30,9 +31,10 @@ export const createTables = async () => {
     await pool.query(`BEGIN`);
     await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
 
-    // create schemas
+    // create schema
     await pool.query(`CREATE SCHEMA IF NOT EXISTS core`);
-    // create tables
+
+    // create users table
     await pool.query(`CREATE TABLE IF NOT EXISTS core.users (
       _id UUID  PRIMARY KEY DEFAULT gen_random_uuid(),
       google_id VARCHAR(255) UNIQUE,
@@ -52,7 +54,158 @@ export const createTables = async () => {
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )`);
+
+    // create enums
+    await pool.query(
+      `CREATE TYPE task_status AS ENUM ('pending','in_progress','completed');`,
+    );
+    await pool.query(
+      `CREATE TYPE task_priority AS ENUM ('normal','medium','high');`,
+    );
+
+    // create projects table with total_subtasks
+    await pool.query(`CREATE TABLE IF NOT EXISTS core.projects (
+      _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      total_tasks INT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      deleted BOOLEAN DEFAULT FALSE,
+      deleted_at TIMESTAMP NULL
+    )`);
+
+    // create tasks table
+    await pool.query(`CREATE TABLE IF NOT EXISTS core.tasks (
+      _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
+      project_id UUID REFERENCES core.projects(_id) ON DELETE SET CASCADE,
+      title VARCHAR(225) NOT NULL,
+      description VARCHAR(500),
+      due_date TIMESTAMP NOT NULL,
+      status task_status DEFAULT 'pending',
+      total_subtasks INT DEFAULT 0,
+      priority task_priority DEFAULT 'normal',
+      created_at TIMESTAMP DEFAULT now(),
+      updated_at TIMESTAMP DEFAULT now()
+    );`);
+
+    // create subtasks table
+    await pool.query(`CREATE TABLE IF NOT EXISTS core.subtasks (
+      _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      task_id UUID NOT NULL REFERENCES core.tasks(_id) ON DELETE CASCADE,
+      title VARCHAR(225) NOT NULL,
+      description VARCHAR(500),
+      due_date TIMESTAMP NOT NULL,
+      status task_status DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT now(),
+      updated_at TIMESTAMP DEFAULT now()
+    );`);
+
+    // --- trigger functions for total_tasks ---
+    await pool.query(`
+      CREATE OR REPLACE FUNCTION core.increment_project_tasks()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        UPDATE core.projects
+        SET total_tasks = total_tasks + 1
+        WHERE _id = (SELECT project_id FROM core.tasks WHERE _id = NEW.task_id);
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    await pool.query(`
+      CREATE OR REPLACE FUNCTION core.decrement_project_tasks()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        UPDATE core.projects
+        SET total_tasks = total_tasks - 1
+        WHERE _id = (SELECT project_id FROM core.tasks WHERE _id = OLD.task_id);
+        RETURN OLD;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    await pool.query(`
+        CREATE OR REPLACE FUNCTION core.increment_task_subtasks()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          UPDATE core.tasks
+          SET total_subtasks = total_subtasks + 1
+          WHERE _id = NEW.task_id;
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+      `);
+    await pool.query(`
+        CREATE OR REPLACE FUNCTION core.decrement_task_subtasks()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          UPDATE core.tasks
+          SET total_subtasks = total_subtasks - 1
+          WHERE _id = OLD.task_id;
+        `);
+    await pool.query(`
+        CREATE OR REPLACE FUNCTION core.decrement_task_subtasks()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          UPDATE core.tasks
+          SET total_subtasks = total_subtasks - 1
+          WHERE _id = OLD.task_id;
+          RETURN OLD;
+        END;
+        $$ LANGUAGE plpgsql;
+      `);
+    // --- triggers ---
+    await pool.query(`
+      CREATE TRIGGER task_insert_trigger
+      AFTER INSERT ON core.tasks
+      FOR EACH ROW
+      EXECUTE FUNCTION core.increment_project_tasks();
+    `);
+
+    await pool.query(`
+      CREATE TRIGGER task_delete_trigger
+      AFTER DELETE ON core.tasks
+      FOR EACH ROW
+      EXECUTE FUNCTION core.decrement_project_tasks();
+    `);
+
+    // indexes
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON core.tasks(user_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON core.tasks(project_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_subtasks_task_id ON core.subtasks(task_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_projects_user_id ON core.projects(user_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_projects_id ON core.projects(_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_projects_deleted ON core.projects(deleted);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_users_google_id ON core.users(google_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_users_github_id ON core.users(github_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_users_id ON core.users(_id);`,
+    );
+    await pool.query(
+      `CREATE INDEX IF NOT EXISTS idx_users_email ON core.users(email);`,
+    );
     await pool.query(`COMMIT`);
+    console.log("Tables created successfully with total_tasks logic.");
   } catch (error) {
     try {
       await pool.query(`ROLLBACK`);
