@@ -1,0 +1,29 @@
+[
+  {
+  "title": "Task title",
+  "description": "Optional task description",
+  "due_date": "2025-10-20T23:59:59Z",
+  "status": "pending",
+  "priority": "normal",
+  "subtasks": [
+    {
+      "title": "Subtask 1 title",
+      "description": "Optional task description",
+      "due_date": "2025-10-18T23:59:59Z",
+      "status": "pending"
+    },
+    {
+      "title": "Subtask 2 title",
+      "description": "Optional task description",
+      "due_date": "2025-10-19T23:59:59Z",
+      "status": "in_progress"
+    },
+    {
+      "title": "Subtask 3 title",
+      "description": "Optional task description",
+      "due_date": "2025-10-20T23:59:59Z",
+      "status": "completed"
+    }
+  ]
+}
+]
