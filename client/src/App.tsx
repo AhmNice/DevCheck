@@ -22,8 +22,8 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="dashboard/task" element={<Tasks />} />
-        <Route path="dashboard/import" element={<Import />} />
+        <Route path="task" element={<Tasks />} />
+        <Route path="import" element={<Import />} />
       </Route>,
     ),
   );

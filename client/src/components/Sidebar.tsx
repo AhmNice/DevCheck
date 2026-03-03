@@ -19,12 +19,12 @@ const sidebarData: SideBarProps[] = [
   {
     icon: FcParallelTasks,
     text: "Project Tesks",
-    path: "/dashboard/task",
+    path: "/task",
   },
   {
     icon: FcImport,
     text: "Import",
-    path: "/dashboard/import",
+    path: "/import",
   },
   {
     icon: FcBarChart,
