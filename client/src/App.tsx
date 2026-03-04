@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import PageNotFound from "./pages/PageNotFound";
 import Tasks from "./pages/Tasks";
 import Import from "./pages/Import";
+import Analytics from "./pages/Analytics";
 
 function App() {
   const router = createBrowserRouter(
@@ -22,8 +23,9 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="dashboard/task" element={<Tasks />} />
-        <Route path="dashboard/import" element={<Import />} />
+        <Route path="task" element={<Tasks />} />
+        <Route path="import" element={<Import />} />
+        <Route path="analytics" element={<Analytics />} />
       </Route>,
     ),
   );
