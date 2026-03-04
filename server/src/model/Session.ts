@@ -106,10 +106,15 @@ export class Session {
         if (!refreshToken) {
           throw new UnauthorizedError("No refresh token provided");
         }
-        const decodedRefresh = jwt.verify(
-          refreshToken,
-          config.JWT_SECRET as string,
-        ) as SessionPayload;
+        let decodedRefresh: SessionPayload;
+        try {
+          decodedRefresh = jwt.verify(
+            refreshToken,
+            config.JWT_SECRET as string,
+          ) as SessionPayload;
+        } catch {
+          throw new UnauthorizedError("Invalid refresh token");
+        }
         req.user = decodedRefresh;
         const storedRefreshToken = await this.getSessionRefreshToken({
           token: refreshToken,
@@ -129,9 +134,9 @@ export class Session {
         );
         const userInfo: SessionPayload = {
           user_id: user._id,
-          userName: user.full_name,
+          userName: user.name,
           email: user.email,
-          role: user.role,
+          role: user.account_role,
         };
         const newAccessToken = jwt.sign(userInfo, config.JWT_SECRET as string, {
           expiresIn: config.JWT_EXPIRES_IN || "15m",
