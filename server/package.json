@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint . --fix",
-    "db:init:dev": "tsx src/db/db_init.ts"
+    "db:init:dev": "tsx src/db/db_init.ts",
+    "db:table:dev": "tsx src/db/table_init.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
     "@types/node": "^25.3.0",
     "@types/nodemailer": "^7.0.11",
     "@types/passport": "^1.0.17",
@@ -44,11 +46,13 @@
     "express": "^5.2.1",
     "express-validator": "^7.3.1",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
     "nodemailer": "^8.0.1",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.18.0",
-    "pg-format": "^1.0.4"
+    "pg-format": "^1.0.4",
+    "zod": "^4.3.6"
   }
 }

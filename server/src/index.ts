@@ -9,10 +9,12 @@ import "./auth/google_oauth.js";
 import "./auth/github_oauth.js";
 import testRouter from "./routes/test.route.js";
 import config from "./config/config.js";
+import taskRouter from "./routes/task.route.js";
 
 app.use(passport.initialize());
 app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/tasks", taskRouter);
 app.use("/api/test", testRouter);
 
 app.use(globalErrorHandler);

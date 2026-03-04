@@ -1,0 +1,50 @@
+{
+  "user_id": "uuid-of-user",
+  "name": "DevCheck API Improvements",
+  "description": "Enhancements and new features for DevCheck backend",
+  "deadline": "2025-12-31T23:59:59Z",
+  "tasks": [
+    {
+      "title": "Implement Project-Based Tasks",
+      "description": "Allow tasks to be attached to projects",
+      "due_date": "2025-10-20T23:59:59Z",
+      "status": "todo",
+      "priority": "high",
+      "subtasks": [
+        {
+          "title": "Design project schema",
+          "description": "Create projects table with foreign key",
+          "due_date": "2025-10-15T23:59:59Z",
+          "status": "completed"
+        },
+        {
+          "title": "Add project_id to tasks",
+          "description": "Update tasks table with project relation",
+          "due_date": "2025-10-18T23:59:59Z",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "title": "Implement JSON Import",
+      "description": "Allow bulk project upload via JSON",
+      "due_date": "2025-11-05T23:59:59Z",
+      "status": "todo",
+      "priority": "medium",
+      "subtasks": [
+        {
+          "title": "Validate nested JSON structure",
+          "description": "Use Zod for nested validation",
+          "due_date": "2025-10-28T23:59:59Z",
+          "status": "todo"
+        },
+        {
+          "title": "Wrap creation in DB transaction",
+          "description": "Ensure rollback on failure",
+          "due_date": "2025-10-30T23:59:59Z",
+          "status": "todo"
+        }
+      ]
+    }
+  ]
+}
