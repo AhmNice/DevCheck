@@ -7,7 +7,6 @@ import {
   generateResetPasswordToken,
 } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
-import { createSession } from "../utils/session.js";
 import passport from "passport";
 import {
   sendOTPEmail,
@@ -18,6 +17,8 @@ import {
 import config from "../config/config.js";
 import UserInterface from "../interface/user.interface.js";
 import crypto from "crypto";
+import { Session } from "../model/Session.js";
+import { AuthSecurityService } from "../service/authSecurity.service.js";
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
@@ -55,7 +56,9 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new BadRequestError("User not found");
   }
+  await AuthSecurityService.checkLock(user.id);
   if (user.otp !== otp) {
+    await AuthSecurityService.registerFailure(user._id);
     throw new BadRequestError("Invalid OTP or OTP has expired");
   }
   if (user.otp_expiry && user.otp_expiry < new Date()) {
@@ -76,6 +79,7 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
     );
   }
   await User.updateUserByEmail(user.email, updates);
+  await AuthSecurityService.reset(user._id);
   res.json({
     success: true,
     message: "OTP verified successfully",
@@ -83,23 +87,24 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
 });
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const user = await User.findByEmail(email);
+  const user = await User.findByEmailWithPassword(email);
   if (!user) {
     throw new BadRequestError("Invalid email or password");
   }
+  await AuthSecurityService.checkLock(user.id);
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
+    await AuthSecurityService.registerFailure(user._id);
     throw new BadRequestError("Invalid email or password");
   }
-  createSession(
-    {
-      user_id: user._id,
-      userName: user.name,
-      email: user.email,
-      role: user.account_role,
-    },
-    res,
-  );
+  const nSession = new Session({
+    user_id: user._id,
+    userName: user.name,
+    email: user.email,
+    role: user.account_role,
+  });
+  await nSession.createSession(res);
+  await AuthSecurityService.reset(user._id);
   res.json({
     success: true,
     message: "Login successful",
@@ -114,7 +119,7 @@ export const googleAuthCallback = (
   passport.authenticate(
     "google",
     { session: false },
-    (err: undefined, user: UserInterface) => {
+    async (err: undefined, user: UserInterface) => {
       if (err) {
         return next(err);
       }
@@ -127,15 +132,13 @@ export const googleAuthCallback = (
       }
 
       try {
-        createSession(
-          {
-            user_id: user._id,
-            userName: user.name,
-            email: user.email,
-            role: user.account_role,
-          },
-          res,
-        );
+        const nSession = new Session({
+          user_id: user._id,
+          userName: user.name,
+          email: user.email,
+          role: user.account_role,
+        });
+        await nSession.createSession(res);
         const {
           password: _password,
           otp: _otp,
@@ -163,7 +166,7 @@ export const githubAuthCallback = (
   passport.authenticate(
     "github",
     { session: false },
-    (err: undefined, user: UserInterface) => {
+    async (err: undefined, user: UserInterface) => {
       if (err) {
         return next(err);
       }
@@ -176,15 +179,13 @@ export const githubAuthCallback = (
       }
 
       try {
-        createSession(
-          {
-            user_id: user._id,
-            userName: user.name,
-            email: user.email,
-            role: user.account_role,
-          },
-          res,
-        );
+        const nSession = new Session({
+          user_id: user._id,
+          userName: user.name,
+          email: user.email,
+          role: user.account_role,
+        });
+        await nSession.createSession(res);
         const {
           password: _password,
           otp: _otp,

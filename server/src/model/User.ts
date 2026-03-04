@@ -230,6 +230,23 @@ export class User implements UserType {
     } = result.rows[0];
     return cleanedUser;
   }
+  static async findByEmailWithPassword(email: string) {
+    const query = `
+      SELECT * FROM core.users WHERE email = $1
+    `;
+    let result;
+    try {
+      result = await pool.query(query, [email]);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding user: " + (error as Error).message,
+      );
+    }
+    if (!result.rows.length) {
+      return null;
+    }
+    return result.rows[0];
+  }
   static async exists(email: string) {
     const user = await this.findByEmail(email);
     return !!user;
