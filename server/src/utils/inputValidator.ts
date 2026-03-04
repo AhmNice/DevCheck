@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { body, query, validationResult } from "express-validator";
+import { body, param, query, validationResult } from "express-validator";
 import { BadRequestError } from "./errorHandler.js";
 
 export const validateRegisterInput = [
@@ -29,7 +29,53 @@ export const validateOTPInput = [
     .withMessage("Invalid purpose for OTP verification")
     .escape(),
 ];
-
+export const validateTaskInput = [
+  body("title").notEmpty().withMessage("Title is required").escape(),
+  body("description").optional().escape(),
+  body("due_date")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid due date format")
+    .escape(),
+  body("status")
+    .isIn(["pending", "in_progress", "completed"])
+    .withMessage("Invalid status value")
+    .escape(),
+  body("priority")
+    .isIn(["normal", "medium", "high"])
+    .withMessage("Invalid priority value")
+    .escape(),
+];
+export const validateSubtaskInput = [
+  body("title").notEmpty().withMessage("Title is required").escape(),
+  body("description").optional().escape(),
+  body("due_date")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid due date format")
+    .escape(),
+  body("status")
+    .isIn(["pending", "in_progress", "completed"])
+    .withMessage("Invalid status value")
+    .escape(),
+];
+export const validateProjectInput = [
+  body("name").notEmpty().withMessage("Name is required").escape(),
+  body("description").optional().escape(),
+  body("deadline")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid deadline format")
+    .escape(),
+];
+export const validateId = (id_value: string) => {
+  return [
+    param(`${id_value}`)
+      .isUUID()
+      .withMessage("Invalid user ID format")
+      .escape(),
+  ];
+};
 export const validationResultHandler = (
   req: Request,
   res: Response,
