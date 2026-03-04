@@ -53,24 +53,26 @@ export class Project implements ProjectType {
       COALESCE(
         json_agg(
           json_build_object(
-            "task_id", t._id,
-            "task_title", t.title,
-            "task_description", t.description,
-            "task_due_date", t.due_date,
-            "task_status", t.status,
-            "task_priority", t.priority,
-            "task_user_id", t.user_id,
+            'task_title', t.title,
+            'task_description', t.description,
+            'task_due_date', t.due_date,
+            'task_status', t.status,
+            'task_priority', t.priority,
+            'task_user_id', t.user_id
           )
         )FILTER (WHERE t._id IS NOT NULL), '[]'
       )AS tasks
       FROM core.projects p
       LEFT JOIN core.tasks t ON p._id = t.project_id
       WHERE p._id = $1
-      AND p.deleted = false`;
+      AND p.deleted = false
+      GROUP BY p._id`;
       const result = await pool.query(query, [project_id]);
       return result.rows[0] || null;
     } catch (error) {
-      console.error("Error finding project by ID:", error);
+      throw new Error(
+        "Error finding project by ID: " + (error as Error).message,
+      );
     }
   }
   static async findAllByUserId(
@@ -104,7 +106,7 @@ export class Project implements ProjectType {
       throw new Error("Error archiving project: " + (error as Error).message);
     }
   }
-  static async unarchive(project_id: string, client: Pool | PoolClient = pool) {
+  static async unarchive(client: Pool | PoolClient = pool, project_id: string) {
     try {
       const query = `UPDATE core.projects SET archived = false WHERE _id = $1`;
       await client.query(query, [project_id]);
@@ -112,12 +114,52 @@ export class Project implements ProjectType {
       throw new Error("Error unarchiving project: " + (error as Error).message);
     }
   }
-  static async destroy(project_id: string, client: Pool | PoolClient = pool) {
+  static async listArchivedByUserId(
+    client: Pool | PoolClient = pool,
+    { user_id }: { user_id: string },
+  ) {
+    try {
+      const query = `SELECT
+        * FROM core.projects WHERE user_id = $1 AND archived = true ORDER BY created_at DESC`;
+      const result = await client.query(query, [user_id]);
+      return result.rows || [];
+    } catch (error) {
+      throw new Error(
+        "Error listing archived projects by user ID: " +
+          (error as Error).message,
+      );
+    }
+  }
+  static async listDeletedByUserId(
+    client: Pool | PoolClient = pool,
+    { user_id }: { user_id: string },
+  ) {
+    try {
+      const query = `SELECT
+        * FROM core.projects WHERE user_id = $1 AND deleted = true ORDER BY created_at DESC`;
+      const result = await client.query(query, [user_id]);
+      return result.rows || [];
+    } catch (error) {
+      throw new Error(
+        "Error listing deleted projects by user ID: " +
+          (error as Error).message,
+      );
+    }
+  }
+  static async destroy(client: Pool | PoolClient = pool, project_id: string) {
     try {
       const query = `DELETE FROM core.projects WHERE _id = $1`;
       await client.query(query, [project_id]);
     } catch (error) {
       throw new Error("Error destroying project: " + (error as Error).message);
+    }
+  }
+  static async restore(client: Pool | PoolClient = pool, project_id: string) {
+    try {
+      const query = `UPDATE core.projects SET deleted = false, deleted_at = NULL WHERE _id = $1`;
+      await client.query(query, [project_id]);
+    } catch (error) {
+      throw new Error("Error restoring project: " + (error as Error).message);
     }
   }
 }
