@@ -162,7 +162,7 @@ export const createTables = async () => {
       RETURNS TRIGGER AS $func$
       BEGIN
         UPDATE core.projects
-        SET total_tasks = total_tasks - 1
+        SET total_tasks = GREATEST(total_tasks - 1, 0)
         WHERE _id = OLD.project_id;
         RETURN OLD;
       END;
@@ -188,7 +188,7 @@ export const createTables = async () => {
       RETURNS TRIGGER AS $func$
       BEGIN
         UPDATE core.tasks
-        SET total_subtasks = total_subtasks - 1
+        SET total_subtasks = GREATEST(total_subtasks - 1, 0)
         WHERE _id = OLD.task_id;
         RETURN OLD;
       END;
