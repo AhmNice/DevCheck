@@ -1,5 +1,6 @@
 import { pool } from "../config/db.config.js";
 import { SECURITY_CONFIG } from "../constant/security.constants.js";
+import { APIError } from "../utils/errorHandler.js";
 
 export class AuthSecurityService {
   static async checkLock(userId: string) {
@@ -11,7 +12,11 @@ export class AuthSecurityService {
     const lockUntil = rows[0]?.lock_until;
 
     if (lockUntil && new Date(lockUntil) > new Date()) {
-      throw new Error("Account temporarily locked");
+      throw new APIError(
+        "Account temporarily locked",
+        429,
+        "ACCOUNT_TEMPORARILY_LOCKED",
+      );
     }
   }
 
@@ -19,7 +24,7 @@ export class AuthSecurityService {
     const { rows } = await pool.query(
       `UPDATE core.users
        SET failed_attempts = failed_attempts + 1
-       WHERE id = $1
+       WHERE _id = $1
        RETURNING failed_attempts`,
       [userId],
     );

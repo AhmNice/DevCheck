@@ -52,11 +52,11 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   if (purpose !== "verification" && purpose !== "password_reset") {
     throw new BadRequestError("Invalid purpose for OTP verification");
   }
-  const user = await User.findByEmail(email);
+  const user = await User.findByEmailWithOTP(email);
   if (!user) {
     throw new BadRequestError("User not found");
   }
-  await AuthSecurityService.checkLock(user.id);
+  await AuthSecurityService.checkLock(user._id);
   if (user.otp !== otp) {
     await AuthSecurityService.registerFailure(user._id);
     throw new BadRequestError("Invalid OTP or OTP has expired");
@@ -91,7 +91,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new BadRequestError("Invalid email or password");
   }
-  await AuthSecurityService.checkLock(user.id);
+  await AuthSecurityService.checkLock(user._id);
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     await AuthSecurityService.registerFailure(user._id);

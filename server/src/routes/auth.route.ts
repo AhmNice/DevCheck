@@ -22,7 +22,7 @@ authRouter.post(
   "/user/register",
   validateRegisterInput,
   validationResultHandler,
-  rateLimiter({ maxTokens: 20, refillInterval: 60 }),
+  rateLimiter({ maxTokens: 10, refillInterval: 60 }),
   register,
 );
 authRouter.post(
@@ -36,7 +36,7 @@ authRouter.post(
   "/user/login",
   validateLoginInput,
   validationResultHandler,
-  rateLimiter({ maxTokens: 5, refillInterval: 60 }),
+  rateLimiter({ maxTokens: 5, refillInterval: 5 }),
   login,
 );
 authRouter.get(
