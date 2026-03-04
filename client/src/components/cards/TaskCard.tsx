@@ -31,7 +31,7 @@ export const MiniTaskCard = ({ title, startDate, endDate }: taskProps) => {
           <ChevronRight size={20} className="text-gray-600" />
         </div>
       </div>
-      <hr />
+      <div className="w-full  h-0.5 bg-gray-300/20"></div>
     </div>
   );
 };

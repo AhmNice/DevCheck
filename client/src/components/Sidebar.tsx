@@ -2,7 +2,6 @@ import { FaChessBoard, FaList } from "react-icons/fa6";
 import { FcBarChart, FcImport, FcParallelTasks } from "react-icons/fc";
 import type { IconType } from "react-icons";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
 
 interface SideBarProps {
   icon: IconType;

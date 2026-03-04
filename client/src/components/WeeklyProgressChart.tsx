@@ -6,11 +6,34 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Legend,
+  Cell,
+  Bar,
+  BarChart,
 } from "recharts";
 
 interface dataProps {
   day: string;
   tasks: number;
+}
+interface PieData {
+  name: string;
+  value: number;
+}
+
+interface PieChartProps {
+  data: PieData[];
+}
+
+interface BarData {
+  name: string;
+  value: number;
+}
+
+interface BarChartProps {
+  data: BarData[];
 }
 
 const data: dataProps[] = [
@@ -73,3 +96,76 @@ export default function WeeklyProgressChart() {
     </div>
   );
 }
+
+const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
+
+export const TaskPieChart = ({ data }: PieChartProps) => {
+  return (
+    <div className="w-[30%] h-96 bg-white rounded-2xl p-4 shadow-sm">
+      <div className="">
+        <h3 className="text-xl font-black text-gray-900">Task Distribution</h3>
+        <p className="text-sm font-semibold text-neutral-500">
+          Breakdown by category
+        </p>
+      </div>
+      <ResponsiveContainer width="100%" height="85%">
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            innerRadius={60} // Donut style
+            paddingAngle={3}
+            label
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export const TaskBarChart = ({ data }: BarChartProps) => {
+  return (
+    <div className="w-full h-96 bg-white rounded-2xl p-4 shadow-sm">
+      <div>
+        <h3 className="text-xl font-black text-gray-900">Task Distribution</h3>
+        <p className="text-sm font-semibold text-neutral-500">
+          Breakdown by category
+        </p>
+      </div>
+
+      <ResponsiveContainer width="100%" height="85%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+
+          <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+            {data.map((entry, index) => {
+              let color = "#94a3b8";
+
+              if (entry.name.toUpperCase().includes("HIGH")) {
+                color = "#3b82f6";
+              } else if (entry.name.toUpperCase().includes("LOW")) {
+                color = "#ef4444";
+              }
+
+              return <Cell key={index} fill={color} />;
+            })}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
