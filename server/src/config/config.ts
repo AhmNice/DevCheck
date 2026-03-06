@@ -22,7 +22,8 @@ interface Config {
   EMAIL_USER: string;
   EMAIL_PASS: string;
   EMAIL_SERVICE: string;
-  SESSION_COOKIE_NAME: string;
+  SESSION_COOKIE_NAME_ACCESS: string;
+  SESSION_COOKIE_NAME_REFRESH: string;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
   GOOGLE_CLIENT_ID: string;
@@ -48,7 +49,10 @@ const config: Config = {
   EMAIL_USER: process.env.EMAIL_USER!,
   EMAIL_PASS: process.env.EMAIL_PASS!,
   EMAIL_SERVICE: process.env.EMAIL_SERVICE!,
-  SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME || "devcheck_session",
+  SESSION_COOKIE_NAME_ACCESS:
+    process.env.SESSION_COOKIE_NAME_ACCESS || "devcheck_access",
+  SESSION_COOKIE_NAME_REFRESH:
+    process.env.SESSION_COOKIE_NAME_REFRESH || "devcheck_refresh",
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID!,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET!,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,

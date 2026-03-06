@@ -14,11 +14,19 @@ export const createSession = (
   userInfo: SessionPayload,
   res: Response,
 ): void => {
-  const token = jwt.sign(userInfo, config.JWT_SECRET as string, {
+  const accessToken = jwt.sign(userInfo, config.JWT_SECRET as string, {
     expiresIn: config.JWT_EXPIRES_IN || "7d",
   });
+  const refreshToken = jwt.sign(userInfo, config.JWT_SECRET as string, {
+    expiresIn: "7d",
+  });
 
-  res.cookie(`${config.SESSION_COOKIE_NAME}`, token, {
+  res.cookie(`${config.SESSION_COOKIE_NAME_REFRESH}`, refreshToken, {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  res.cookie(`${config.SESSION_COOKIE_NAME_ACCESS}`, accessToken, {
     httpOnly: true,
     secure: config.NODE_ENV === "production",
     sameSite: "strict",
@@ -30,7 +38,7 @@ export const verifySession = (
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies[`${config.SESSION_COOKIE_NAME}`];
+  const token = req.cookies[`${config.SESSION_COOKIE_NAME_ACCESS}`];
   if (!token) {
     throw new UnauthorizedError("No session token provided");
   }

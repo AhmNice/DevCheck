@@ -10,7 +10,7 @@ type Role = "user" | "admin";
 export const protectedRoute = (requiredRoles: Role | Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const sessionToken = req.cookies[config.SESSION_COOKIE_NAME];
+      const sessionToken = req.cookies[config.SESSION_COOKIE_NAME_ACCESS];
 
       if (!sessionToken) {
         throw new UnauthorizedError("No session token provided");

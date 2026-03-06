@@ -10,13 +10,16 @@ import "./auth/github_oauth.js";
 import testRouter from "./routes/test.route.js";
 import config from "./config/config.js";
 import taskRouter from "./routes/task.route.js";
+import projectRouter from "./routes/project.route.js";
+import cookieParser from "cookie-parser";
 
+app.use(cookieParser());
 app.use(passport.initialize());
 app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/test", testRouter);
-
+app.use("/api/projects", projectRouter);
 app.use(globalErrorHandler);
 let server: ReturnType<typeof app.listen>;
 

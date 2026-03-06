@@ -230,6 +230,54 @@ export class User implements UserType {
     } = result.rows[0];
     return cleanedUser;
   }
+  static async findByEmailWithOTP(email: string) {
+    const query = `
+      SELECT * FROM core.users WHERE email = $1
+    `;
+    let result;
+    try {
+      result = await pool.query(query, [email]);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding user: " + (error as Error).message,
+      );
+    }
+    if (!result.rows.length) {
+      return null;
+    }
+    const {
+      password: _password,
+      otp_expiry: _otp_expiry,
+      resetPassword_token: _resetPassword_token,
+      resetPassword_token_expiry: _resetPassword_token_expiry,
+      ...cleanedUser
+    } = result.rows[0];
+    return cleanedUser;
+  }
+  static async findByEmailWithPassword(email: string) {
+    const query = `
+      SELECT * FROM core.users WHERE email = $1
+    `;
+    let result;
+    try {
+      result = await pool.query(query, [email]);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding user: " + (error as Error).message,
+      );
+    }
+    if (!result.rows.length) {
+      return null;
+    }
+    const {
+      otp: _otp,
+      otp_expiry: _otp_expiry,
+      resetPassword_token: _resetPassword_token,
+      resetPassword_token_expiry: _resetPassword_token_expiry,
+      ...cleanedUser
+    } = result.rows[0];
+    return cleanedUser;
+  }
   static async exists(email: string) {
     const user = await this.findByEmail(email);
     return !!user;
