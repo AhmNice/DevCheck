@@ -139,19 +139,8 @@ export const googleAuthCallback = (
           role: user.account_role,
         });
         await nSession.createSession(res);
-        const {
-          password: _password,
-          otp: _otp,
-          otp_expiry: _otp_expiry,
-          resetPassword_token: _resetPassword_token,
-          resetPassword_token_expiry: _resetPassword_token_expiry,
-          ...cleanedUser
-        } = user;
-        return res.json({
-          success: true,
-          message: "Google authentication successful",
-          user: cleanedUser,
-        });
+
+        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
       } catch (sessionError) {
         return next(sessionError);
       }
@@ -186,19 +175,7 @@ export const githubAuthCallback = (
           role: user.account_role,
         });
         await nSession.createSession(res);
-        const {
-          password: _password,
-          otp: _otp,
-          otp_expiry: _otp_expiry,
-          resetPassword_token: _resetPassword_token,
-          resetPassword_token_expiry: _resetPassword_token_expiry,
-          ...cleanedUser
-        } = user;
-        return res.json({
-          success: true,
-          message: "github authentication successful",
-          user: cleanedUser,
-        });
+        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
       } catch (error) {
         return next(error);
       }
