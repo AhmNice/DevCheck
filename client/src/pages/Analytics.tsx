@@ -1,8 +1,5 @@
-import { Lightbulb, LightbulbIcon } from "lucide-react";
-import WeeklyProgressChart, {
-  TaskBarChart,
-  TaskPieChart,
-} from "../components/WeeklyProgressChart";
+import { Lightbulb } from "lucide-react";
+import { TaskBarChart, TaskPieChart } from "../components/WeeklyProgressChart";
 import DashboardLayout from "../Layout/DashboardLayout";
 import { MiniTaskCard } from "../components/cards/TaskCard";
 import { taskData } from "./Tasks";
@@ -20,8 +17,8 @@ const Analytics = () => {
     <DashboardLayout>
       <div className="p-6 space-y-8">
         <StatsCard />
-        <div className="flex items-center gap-6">
-          <div className="flex-1 shadow-sm rounded-2xl overflow-hidden">
+        <div className="flex lg:flex-row flex-col items-center gap-6">
+          <div className="flex-1 shadow-sm w-full rounded-2xl overflow-hidden">
             <TaskBarChart data={pieData} />
           </div>
           <TaskPieChart data={pieData} />

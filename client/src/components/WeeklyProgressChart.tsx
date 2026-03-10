@@ -101,7 +101,7 @@ const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444"];
 
 export const TaskPieChart = ({ data }: PieChartProps) => {
   return (
-    <div className="w-[30%] h-96 bg-white rounded-2xl p-4 shadow-sm">
+    <div className="lg:w-[30%] w-full h-96 bg-white rounded-2xl p-4 shadow-sm">
       <div className="">
         <h3 className="text-xl font-black text-gray-900">Task Distribution</h3>
         <p className="text-sm font-semibold text-neutral-500">

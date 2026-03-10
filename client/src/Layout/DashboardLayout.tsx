@@ -7,29 +7,27 @@ type DashboardLayoutProps = PropsWithChildren<{}>;
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <div className="flex ">
+    <div className="flex min-h-screen w-full">
       <Sidebar />
-      <div className="flex-1 items-center justify-between bg-[#F8FAFC]">
-        <div className="flex flex-col ">
-          <div className="flex  bg-white p-6 border-b border-b-gray-400/20 items-center justify-between">
-            <h3>Overview</h3>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span>
-                  <FaBell />
-                </span>
-                <span>
-                  <FcSettings />
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <h4>Alex Rivea</h4>
-                <FaUser />
-              </div>
+
+      <div className="flex flex-1 flex-col bg-[#F8FAFC]">
+        <div className="flex items-center justify-between bg-white p-6 border-b border-b-gray-200">
+          <h3 className="font-semibold">Overview</h3>
+
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              <FaBell />
+              <FcSettings />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <h4>Alex Rivea</h4>
+              <FaUser />
             </div>
           </div>
-          {children}
         </div>
+
+        <div className="flex-1 p-6">{children}</div>
       </div>
     </div>
   );
