@@ -17,9 +17,10 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
+    "@typescript-eslint/utils": "^8.55.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
@@ -33,6 +34,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
