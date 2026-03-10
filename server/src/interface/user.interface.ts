@@ -11,6 +11,7 @@ export default interface UserInterface {
   otp?: string | null;
   otp_expiry?: Date | null;
   is_verified?: boolean;
+  github_access_token?: string | null;
   resetPassword_token?: string | null;
   resetPassword_token_expiry?: Date | null;
   job_role: string;
