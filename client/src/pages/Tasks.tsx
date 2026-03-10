@@ -4,7 +4,7 @@ import TaskCard, { type taskProps } from "../components/cards/TaskCard";
 import { Plus } from "lucide-react";
 import CreateTask from "./CreateTask";
 
-export const taskData: taskProps[] = [
+const taskData: taskProps[] = [
   {
     tag: "HIGH PRIORITY",
     title: "Refactor Auth Middleware",
