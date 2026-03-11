@@ -1,9 +1,110 @@
 import { Lightbulb } from "lucide-react";
 import { TaskBarChart, TaskPieChart } from "../components/WeeklyProgressChart";
 import DashboardLayout from "../Layout/DashboardLayout";
-import { MiniTaskCard } from "../components/cards/TaskCard";
-import { taskData } from "./Tasks";
+import { MiniTaskCard, type taskProps } from "../components/cards/TaskCard";
 import StatsCard from "../components/cards/StatsCard";
+
+const taskData: taskProps[] = [
+  {
+    tag: "HIGH PRIORITY",
+    title: "Refactor Auth Middleware",
+    description:
+      "Ensure OAuth providers are correctly handled in the new microservices architecture and update dependencies",
+    percentage: 60,
+    startDate: "Oct 24",
+    endDate: "Nov 18",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Setup Google Cloud Console credentials",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Configure redirect URIs for development environment",
+        completed: false,
+      },
+      {
+        id: 3,
+        title: "Implement Passport.js strategy for GitHub",
+        completed: false,
+      },
+    ],
+  },
+  {
+    tag: "MEDIUM PRIORITY",
+    title: "Design System Audth",
+    description:
+      "Review the current Figma components against the production React library for visual consistency.",
+    percentage: 20,
+    startDate: "Oct 24",
+    endDate: "Nov 18",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Setup Google Cloud Console credentials",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Configure redirect URIs for development environment",
+        completed: false,
+      },
+    ],
+  },
+  {
+    tag: "LOW PRIORITY",
+    title: "Update Documentation",
+    description:
+      "Refresh the README and API references to reflect the recent endpoint changes in v2.4.",
+    percentage: 95,
+    startDate: "Oct 24",
+    endDate: "Nov 18",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Setup Google Cloud Console credentials",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Configure redirect URIs for development environment",
+        completed: false,
+      },
+      {
+        id: 3,
+        title: "Implement Passport.js strategy for GitHub",
+        completed: false,
+      },
+    ],
+  },
+  {
+    tag: "HIGH PRIORITY",
+    title: "Server Migration",
+    description:
+      "Move current staging environment to AWS us-east-1 and verify database latency benchmarks.",
+    percentage: 45,
+    startDate: "Oct 30",
+    endDate: "Nov 18",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Setup Google Cloud Console credentials",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Configure redirect URIs for development environment",
+        completed: false,
+      },
+      {
+        id: 3,
+        title: "Implement Passport.js strategy for GitHub",
+        completed: false,
+      },
+    ],
+  },
+];
 
 const pieData = [
   { name: "Completed", value: 8 },

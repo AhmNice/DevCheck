@@ -52,7 +52,7 @@ const StatsCard = () => {
         }
         const { icon: Icon } = stats;
         return (
-          <div className="p-6 border-2 flex-1 shadow-sm border-gray-400/20 bg-white rounded-xl">
+          <div className="p-6 border-1 flex-1 shadow-sm border-gray-400/20 bg-white rounded-xl">
             <div className="flex justify-between">
               <div className="space-y-3">
                 <h6 className="font-sans text-md text-blue-950/60 font-semibold">
