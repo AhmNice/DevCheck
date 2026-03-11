@@ -35,8 +35,8 @@ const sidebarData: SideBarProps[] = [
 const Sidebar = () => {
   // const [active, setActive] = useState()
   return (
-    <div>
-      <div className="bg-white p-6 border-r border-r-gray-400/10">
+    <div className="">
+      <div className="bg-white h-screen p-6 border-r border-r-gray-400/10">
         <div className="flex items-center gap-2 p-3">
           <FaList />
           <h3 className="font-bold">DevCheckList</h3>
@@ -57,7 +57,7 @@ const Sidebar = () => {
                   }`
                 }
               >
-                <Icon className="text-lg" />
+                <Icon className="text-lg" size={16} />
                 <span className="font-medium">{sidebar.text}</span>
               </NavLink>
             );

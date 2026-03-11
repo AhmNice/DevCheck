@@ -67,7 +67,7 @@ const StatsCard = () => {
                 </p>
               </div>
               <div>
-                <Icon />
+                <Icon size={16} />
               </div>
             </div>
           </div>
