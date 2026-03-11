@@ -1,12 +1,17 @@
 import { Calendar, ChevronRight, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import type { subTask } from "../data/subtaskData";
 
 export interface taskProps {
   tag: string;
+  id?: number;
   title: string;
+
   description?: string;
   percentage?: number;
   startDate: string;
   endDate: string;
+  subtaskData?: subTask[];
 }
 
 export const MiniTaskCard = ({ title, startDate, endDate }: taskProps) => {
@@ -43,7 +48,10 @@ const TaskCard = ({
   percentage,
   startDate,
   endDate,
+  subtaskData,
 }: taskProps) => {
+  console.log(subtaskData);
+  const navigate = useNavigate();
   let tagStyle = "";
 
   if (tag.includes("HIGH")) {
@@ -86,7 +94,22 @@ const TaskCard = ({
             <Calendar size={16} /> <span>{endDate}</span>
           </div>
         </div>
-        <div className="cursor-pointer">
+        <div
+          onClick={() =>
+            navigate("/task-details", {
+              state: {
+                tag,
+                title,
+                description,
+                percentage,
+                startDate,
+                endDate,
+                subtaskData,
+              },
+            })
+          }
+          className="cursor-pointer"
+        >
           <ExternalLink size={16} />
         </div>
       </div>
