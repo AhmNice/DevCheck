@@ -13,6 +13,7 @@ type UserType = Pick<
   | "github_id"
   | "otp"
   | "otp_expiry"
+  | "github_access_token"
 >;
 export class User implements UserType {
   name!: string;
@@ -24,6 +25,7 @@ export class User implements UserType {
   github_id!: string | null;
   otp?: string | null;
   otp_expiry?: Date | null | undefined;
+  github_access_token?: string | null;
   constructor(parameters: UserType) {
     Object.assign(this, parameters);
   }
@@ -174,8 +176,8 @@ export class User implements UserType {
   }
   async githubSave() {
     const query = `
-      INSERT INTO core.users (name, email, account_role, github_id, profile_picture, otp)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO core.users (name, email, account_role, github_id, profile_picture, password, is_verified, github_access_token)
+      VALUES ($1, $2, $3, $4, $5, $6, true, $7)
       RETURNING *
     `;
     const values = [
@@ -184,7 +186,8 @@ export class User implements UserType {
       this.account_role,
       this.github_id,
       this.profile_picture,
-      this.otp,
+      this.password,
+      this.github_access_token,
     ];
     let result;
     try {
