@@ -5,6 +5,7 @@ import { User } from "../model/User.js";
 import UserInterface from "../interface/user.interface.js";
 import { generateRandomPassword } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
+import axios from "axios";
 
 type UserType = Pick<
   UserInterface,
@@ -15,6 +16,8 @@ type UserType = Pick<
   | "google_id"
   | "profile_picture"
   | "github_id"
+  | "is_verified"
+  | "github_access_token"
 >;
 
 passport.use(
@@ -23,21 +26,39 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       callbackURL: `${process.env.SERVER_URL}/api/auth/github/callback`,
-      scope: ["user:email"],
+      scope: ["read:user", "user:email"],
     },
-    async (accessToken, refreshToken, profile: Profile, done) => {
+    async (
+      accessToken: string,
+      _refreshToken: string,
+      profile: Profile,
+      done: (err: Error | null, user?: unknown) => void,
+    ) => {
       try {
         console.log("GitHub profile:", profile);
+        let email = profile.emails?.[0]?.value;
+        // If email not in profile → fetch from GitHub API
+        if (!email) {
+          const response = await axios.get(
+            "https://api.github.com/user/emails",
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+          );
 
-        const email =
-          profile.emails?.find((e) => e.primary && e.verified)?.value ||
-          profile._json.email;
-        console.log("Extracted email:", email);
+          const primaryEmail = response.data.find(
+            (e: { primary: boolean; verified: boolean }) =>
+              e.primary && e.verified,
+          );
+
+          email = primaryEmail?.email;
+        }
+
         if (!email) {
           return done(
-            new BadRequestError(
-              "We couldn't access your GitHub email. Make sure it's public or allow email access.",
-            ),
+            new BadRequestError("We couldn't access your GitHub email."),
           );
         }
 
@@ -50,11 +71,14 @@ passport.use(
           email,
           profile_picture: profile.photos?.[0]?.value || "",
           password: passwordHash,
-          account_role: "user" as const,
+          account_role: "user",
           google_id: null,
+          is_verified: true,
+          github_access_token: accessToken,
         };
 
         let existingUser = await User.findByGitHubId(profile.id);
+        console.log(user);
         if (!existingUser) {
           const newUser = new User(user);
           existingUser = await newUser.githubSave();
@@ -69,5 +93,4 @@ passport.use(
   ),
 );
 
-console.log("Github OAuth strategy configured");
 console.log("Github OAuth strategy configured");
