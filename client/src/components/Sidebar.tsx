@@ -13,16 +13,20 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-interface SideBarProps {
+interface SidebarItem {
   icon: React.ElementType;
   text: string;
   path: string;
 }
 
-const sidebarData: SideBarProps[] = [
+interface SidebarProps {
+  onCollapseChange?: (isCollapsed: boolean) => void;
+}
+
+const sidebarData: SidebarItem[] = [
   {
     icon: LayoutDashboard,
     text: "Dashboard",
@@ -50,34 +54,33 @@ const sidebarData: SideBarProps[] = [
   },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onCollapseChange }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // Listen for mobile menu toggle events
+  useEffect(() => {
+    onCollapseChange?.(isCollapsed);
+  }, [isCollapsed, onCollapseChange]);
+
   useEffect(() => {
     const handleToggleMobile = () => {
       setIsMobileOpen(true);
     };
 
     window.addEventListener("toggleMobileSidebar", handleToggleMobile);
-
     return () => {
       window.removeEventListener("toggleMobileSidebar", handleToggleMobile);
     };
   }, []);
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setIsCollapsed(true);
-        // Close mobile menu when resizing to desktop
+        setIsCollapsed(false);
         if (window.innerWidth >= 768) {
           setIsMobileOpen(false);
         }
-      } else {
-        setIsCollapsed(false);
       }
     };
     handleResize();
@@ -87,7 +90,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile overlay - controlled by Sidebar's state */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -95,7 +97,6 @@ const Sidebar = () => {
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`
           fixed top-0 left-0 h-screen bg-white border-r border-gray-200 shadow-xl
@@ -104,7 +105,6 @@ const Sidebar = () => {
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
-        {/* Toggle button - hidden on mobile */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1.5 hover:bg-gray-100 shadow-md hover:shadow-lg transition-all hidden md:block z-10"
@@ -116,7 +116,6 @@ const Sidebar = () => {
           )}
         </button>
 
-        {/* Mobile close button */}
         <button
           onClick={() => setIsMobileOpen(false)}
           className="absolute right-4 top-4 md:hidden"
@@ -124,13 +123,12 @@ const Sidebar = () => {
           <ChevronLeft className="w-6 h-6 text-gray-600" />
         </button>
 
-        {/* Logo section */}
         <div
           className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} p-6 border-b border-gray-100`}
         >
           <div className="relative">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-xl shadow-md shadow-blue-500/20">
-              <List className="w-6 h-6 text-white" />
+            <div className="bg-gradient-to-br from-primary to-primary-600 p-2 rounded-xl shadow-md shadow-blue-500/20">
+              <List className="w-6 h-6 text-primary " />
             </div>
           </div>
           {!isCollapsed && (
@@ -141,11 +139,10 @@ const Sidebar = () => {
           )}
         </div>
 
-        {/* Search bar - only when expanded */}
         {!isCollapsed && (
           <div className="px-4 mt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-7 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search..."
@@ -155,7 +152,6 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* Navigation Links */}
         <div className="px-3 mt-6">
           {!isCollapsed && (
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
@@ -170,7 +166,11 @@ const Sidebar = () => {
                 <NavLink
                   to={item.path}
                   key={index}
-                  onClick={() => setIsMobileOpen(false)}
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      setIsMobileOpen(false);
+                    }
+                  }}
                   className={({ isActive }) =>
                     `flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-3 py-3 rounded-xl transition-all group relative ${
                       isActive
@@ -189,13 +189,9 @@ const Sidebar = () => {
                           {item.text}
                         </span>
                       )}
-
-                      {/* Active indicator */}
                       {!isCollapsed && isActive && (
                         <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
                       )}
-
-                      {/* Tooltip for collapsed mode */}
                       {isCollapsed && (
                         <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
                           {item.text}
@@ -209,7 +205,6 @@ const Sidebar = () => {
           </div>
         </div>
 
-        {/* Favorites section */}
         {!isCollapsed && (
           <div className="px-3 mt-8">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
@@ -228,19 +223,20 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* Bottom section */}
         <div className="absolute bottom-0 left-0 right-0">
-          {/* Help & Settings */}
           <div className="px-3 mb-4">
             {isCollapsed ? (
               <div className="space-y-1">
-                <button className="flex justify-center p-3 text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group">
+                <button
+                  onClick={() => navigate("/setting")}
+                  className="flex justify-center p-3 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group"
+                >
                   <Settings className="w-5 h-5" />
                   <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                     Settings
                   </span>
                 </button>
-                <button className="flex justify-center p-3 text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group">
+                <button className="flex justify-center p-3 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group">
                   <HelpCircle className="w-5 h-5" />
                   <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                     Help
@@ -249,11 +245,14 @@ const Sidebar = () => {
               </div>
             ) : (
               <div className="flex gap-2">
-                <button className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <button
+                  onClick={() => navigate("/setting")}
+                  className="flex-1 flex items-center justify-center cursor-pointer gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
                   <Settings className="w-4 h-4" />
                   <span className="text-sm">Settings</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <button className="flex-1 flex items-center justify-center cursor-pointer gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <HelpCircle className="w-4 h-4" />
                   <span className="text-sm">Help</span>
                 </button>
@@ -261,7 +260,6 @@ const Sidebar = () => {
             )}
           </div>
 
-          {/* User Profile */}
           <div
             className={`p-4 border-t border-gray-100 bg-gradient-to-b from-transparent to-gray-50/50 ${isCollapsed ? "text-center" : ""}`}
           >
@@ -294,7 +292,6 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Mobile toggle button */}
       <button
         onClick={() => setIsMobileOpen(true)}
         className="fixed bottom-4 right-4 md:hidden bg-blue-500 text-white p-3 rounded-full shadow-lg z-40"
