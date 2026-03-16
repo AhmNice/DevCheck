@@ -13,7 +13,7 @@ const Hero = () => {
             </h2>
           </div>
           <div className="flex flex-wrap gap-4">
-            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-lg h-14 px-6 bg-[#135bec] text-white text-base font-bold shadow-lg shadow-primary/20 hover:bg-primary/90">
+            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-lg h-14 px-6 bg-[#135bec] text-white text-base font-bold shadow-lg shadow-primary/20 hover:bg-blue-700/90">
               <span>Get Started Free</span>
             </button>
             <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-lg h-14 px-6 bg-white  border border-gray-200  text-[#0d121b]  text-base font-bold hover:bg-gray-50 ">
@@ -33,7 +33,7 @@ const Hero = () => {
                 <div className="h-8 w-3/4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                    <div className="size-5 rounded border-2 border-primary bg-primary/20 flex items-center justify-center">
+                    <div className="size-5 rounded border-2 border-primary bg-blue-700/20 flex items-center justify-center">
                       <span className="material-symbols-outlined text-primary text-[16px] font-bold">
                         check
                       </span>
@@ -51,7 +51,7 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors pointer-events-none"></div>
+            <div className="absolute inset-0 bg-blue-700/5 group-hover:bg-transparent transition-colors pointer-events-none"></div>
           </div>
         </div>
       </div>

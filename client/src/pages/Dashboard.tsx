@@ -109,7 +109,7 @@ const taskData: taskProps[] = [
 const Dashboard = () => {
   return (
     <DashboardLayout>
-      <div className="flex-1 md:p-6 p-2 ">
+      <div className="flex-1 p-2 ">
         <div className="flex flex-col space-y-4">
           <StatsCard />
           <div className="border border-gray-400/20 bg-white shadow-sm rounded-xl flex-1">

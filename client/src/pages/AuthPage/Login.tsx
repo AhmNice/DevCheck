@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../../components/LandingPageComponents/Header";
 import { FaArrowRight, FaGithub } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,7 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate("/dashboard");
+    navigate("/dashboard", { state: { formData } });
     console.log(formData);
   };
 
@@ -22,16 +21,15 @@ const Login = () => {
 
   return (
     <div className="h-screen bg-[#f8f9fb]">
-      <Header />
-      <div className="flex items-center justify-center h-[90%]  max-w-full mx-auto">
-        <div className="text-center">
+      <div className="flex items-center justify-center h-[100%] max-w-full mx-auto">
+        <div className="text-center ">
           <div>
             <h1 className="text-[#0d121b] mb-2 text-4xl font-semibold xl:text-4xl">
               Log in to DevCheckList
             </h1>
             <p className="mb-4"> Manage your technical tasks with focus</p>
           </div>
-          <div className="bg-white p-8 rounded-xl border border-gray-400/20 text-left">
+          <div className="bg-white p-8 shadow-lg rounded-xl border border-gray-400/20 text-left">
             <form action="" className="space-y-6" onSubmit={handleSubmit}>
               <div className="flex flex-col">
                 <label
