@@ -22,7 +22,7 @@ export const createProject = asyncHandler(
       deadline: parsedDeadline,
     });
     const newProject = await project.create();
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Project created successfully",
       project: newProject,
@@ -36,7 +36,7 @@ export const getProjectById = asyncHandler(
     if (!project) {
       throw new BadRequestError("Project not found");
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       project,
     });
@@ -50,7 +50,7 @@ export const userProjects = asyncHandler(
       const projects = await Project.findAllByUserId(client, {
         user_id: `${user_id}`,
       });
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         projects,
       });
@@ -69,7 +69,7 @@ export const archiveProject = asyncHandler(
         throw new BadRequestError("Project not found");
       }
       const updatedProject = await Project.archive(client, `${project_id}`);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Project archived successfully",
         project: updatedProject,
@@ -89,7 +89,7 @@ export const unarchiveProject = asyncHandler(
         throw new BadRequestError("Project not found");
       }
       const updatedProject = await Project.unarchive(client, `${project_id}`);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Project unarchived successfully",
         project: updatedProject,
@@ -109,7 +109,7 @@ export const deleteProject = asyncHandler(
         throw new BadRequestError("Project not found");
       }
       await Project.delete(client, `${project_id}`);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Project deleted successfully",
       });
@@ -128,7 +128,7 @@ export const restoreProject = asyncHandler(
         throw new BadRequestError("Project not found");
       }
       const updatedProject = await Project.restore(client, `${project_id}`);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Project restored successfully",
         project: updatedProject,
@@ -148,7 +148,7 @@ export const destroyProject = asyncHandler(
         throw new BadRequestError("Project not found");
       }
       await Project.destroy(client, `${project_id}`);
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Project permanently deleted successfully",
       });
@@ -165,7 +165,7 @@ export const listArchivedProjects = asyncHandler(
       const projects = await Project.listArchivedByUserId(client, {
         user_id: `${user_id}`,
       });
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         projects,
       });
@@ -182,7 +182,7 @@ export const listDeletedProjects = asyncHandler(
       const projects = await Project.listDeletedByUserId(client, {
         user_id: `${user_id}`,
       });
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         projects,
       });

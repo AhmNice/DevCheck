@@ -39,7 +39,7 @@ export const getUserRepos = asyncHandler(
       throw new BadRequestError("GitHub access token not found for user");
     }
     const repos = await GitHubService.getUserRepos(accessToken);
-    res.json({ success: true, repos });
+    return res.json({ success: true, repos });
   },
 );
 export const searchRepos = asyncHandler(async (req: Request, res: Response) => {
@@ -62,7 +62,7 @@ export const searchRepos = asyncHandler(async (req: Request, res: Response) => {
     throw new BadRequestError("Search query parameter 'q' is required");
   }
   const repos = await GitHubService.searchRepos(query, accessToken);
-  res.json({ success: true, repos });
+  return res.json({ success: true, repos });
 });
 export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
   const user_id = req.user?.user_id;
@@ -106,7 +106,7 @@ export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
     repo,
   });
 
-  res.json({
+  return res.json({
     success: true,
     connectedRepo,
   });
