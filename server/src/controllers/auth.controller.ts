@@ -80,7 +80,7 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   }
   await User.updateUserByEmail(user.email, updates);
   await AuthSecurityService.reset(user._id);
-  res.json({
+  return res.status(200).json({
     success: true,
     message: "OTP verified successfully",
   });
@@ -105,7 +105,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
   await nSession.createSession(res);
   await AuthSecurityService.reset(user._id);
-  res.json({
+  return res.status(200).json({
     success: true,
     message: "Login successful",
     user,
@@ -200,7 +200,7 @@ export const requestPasswordReset = asyncHandler(
       `${config.CLIENT_URL}/reset-password/${token.token}`,
       "1 hour",
     );
-    res.json({
+    return res.status(200).json({
       success: true,
       message: "Password reset link has been sent to your email",
     });
@@ -235,7 +235,7 @@ export const resetPassword = asyncHandler(
       `${config.CLIENT_URL}/support`,
       `${config.CLIENT_URL}/login`,
     );
-    res.json({
+    return res.status(200).json({
       success: true,
       message: "Password has been reset successfully",
     });
