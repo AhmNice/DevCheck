@@ -116,48 +116,40 @@ const pieData = [
 const Analytics = () => {
   return (
     <DashboardLayout>
-      <div className="p-2 space-y-8">
+      <div className="p-2 space-y-6">
         <StatsCard />
-        <div className="flex lg:flex-row flex-col items-center gap-6">
-          <div className="flex-1 shadow-sm w-full rounded-2xl overflow-hidden">
+
+        <div className="flex lg:flex-row flex-col items-center gap-4">
+          <div className="flex-1 shadow-sm w-full rounded-xl overflow-hidden">
             <TaskBarChart data={pieData} />
           </div>
           <TaskPieChart data={pieData} />
         </div>
+
         <div>
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="rounded-lg md:w-[30%]    py-8 space-y-2 flex flex-col  text-blue-100 p-4 bg-blue-600 ">
-              <div className="p-2  self-start text-white bg-blue-300 rounded-lg">
-                <Lightbulb />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="rounded-lg md:w-[30%] py-5 space-y-2 flex flex-col text-blue-100 p-4 bg-blue-600">
+              <div className="p-1.5 self-start text-white bg-blue-300 rounded-lg">
+                <Lightbulb size={18} />
               </div>
-              <h3 className="font-bold text-white text-xl">Weekly Insight</h3>
-              <p>
+              <h3 className="font-bold text-white text-base">Weekly Insight</h3>
+              <p className="text-sm">
                 You are most productive on <strong>Tuesday</strong>
                 <strong>mornings</strong> between 9:00 AM and 11:30 AM. You
                 complete 34% more tasks during this window than any other time.
               </p>
-              <button className="rounded-lg mt-8 cursor-pointer px-4 justify-start  self-start font-bold py-3 hover:bg-blue-800  hover:scale-105 bg-white text-blue-500 transition-all delay-150 duration-150">
+              <button className="rounded-lg mt-4 cursor-pointer px-3 justify-start self-start font-semibold py-2 hover:bg-blue-800 hover:scale-105 bg-white text-blue-500 text-sm transition-all delay-150 duration-150">
                 View Productivity Map
               </button>
             </div>
-            <div className="flex flex-col md:flex-row gap-8 flex-2">
-              <div className="border flex-1 p-4 border-gray-400/20 bg-white shadow-sm rounded-xl">
+
+            <div className="flex flex-col md:flex-row gap-4 flex-2">
+              <div className="border flex-1 p-3 border-gray-400/20 bg-white shadow-sm rounded-xl">
                 <div className="flex items-center justify-between">
-                  <h3 className="p-3 font-bold">High Impact Tasks</h3>
-                  <button className="text-blue-500">View All</button>
+                  <h3 className="p-2 font-semibold text-sm">High Impact Tasks</h3>
+                  <button className="text-blue-500 text-xs">View All</button>
                 </div>
-                <div className="w-full  h-0.5 bg-gray-300/20"></div>
-                {/* <table>
-                  <thead>
-                    <th>
-                      <tr>Task Name</tr>
-                      <tr>Category</tr>
-                      <tr>Start Time</tr>
-                      <tr>Due Time</tr>
-                      <tr>Status</tr>
-                    </th>
-                  </thead>
-                </table> */}
+                <div className="w-full h-px bg-gray-300/20"></div>
                 {taskData.map((task, i) => (
                   <div key={i}>
                     <MiniTaskCard

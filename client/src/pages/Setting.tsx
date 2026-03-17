@@ -37,11 +37,11 @@ const Setting = () => {
     <DashboardLayout>
       <div className="relative">
         <div className="flex flex-col p-2 border-b border-b-gray-400/20">
-          <div className="py-4">
-            <h2 className="text-2xl font-bold text-gray-900">
+          <div className="py-3">
+            <h2 className="text-xl font-bold text-gray-900">
               Profile Settings
             </h2>
-            <p className="text-md text-gray-400 mt-0.5">
+            <p className="text-sm text-gray-500 mt-0.5">
               Keep your developer profile up to date and manage your visibility.
             </p>
           </div>
@@ -49,35 +49,35 @@ const Setting = () => {
 
         <div className="flex flex-col md:flex-row bg-white p-4 shadow-sm rounded-lg mt-6 md:items-center items-start gap-6 justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-6 rounded-full bg-gray-400/80 border-4 border-gray-400/10 text-white">
-              <UserPlus size={40} />
+            <div className="p-4 rounded-full bg-gray-400/80 border-4 border-gray-400/10 text-white">
+              <UserPlus size={32} />
             </div>
             <div>
-              <h3 className="font-semibold text-xl">Alex Rivera</h3>
-              <p className="text-gray-600">
+              <h3 className="font-semibold text-base">Alex Rivera</h3>
+              <p className="text-xs text-gray-600">
                 Fullstack Developer · San Francisco, CA
               </p>
             </div>
           </div>
-          <button className="bg-blue-500 px-4 py-2 cursor-pointer hover:bg-blue-700 duration-200 delay-150 rounded-md text-white">
+          <button className="bg-blue-500 px-3 py-1.5 cursor-pointer hover:bg-blue-700 duration-200 delay-150 rounded-md text-white text-sm">
             Change Avatar
           </button>
         </div>
 
-        <div className="bg-white p-4 shadow-sm rounded-lg mt-6">
+        <div className="bg-white p-5 shadow-sm rounded-lg mt-6">
           <div>
-            <h3 className="font-semibold text-xl">Personal Information</h3>
-            <p className="text-gray-500">
+            <h3 className="font-semibold text-base">Personal Information</h3>
+            <p className="text-xs text-gray-500">
               Your information is used for team collaboration.
             </p>
           </div>
-          <div className="border-b border-b-gray-400/20 mt-4 mb-4"></div>
+          <div className="border-b border-b-gray-400/20 mt-3 mb-3"></div>
 
           <div>
             <form onSubmit={handleSave}>
-              <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-8">
-                <div className="flex flex-1 flex-col gap-2 pb-2 w-full">
-                  <label htmlFor="name" className="font-medium text-gray-700">
+              <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-6">
+                <div className="flex flex-1 flex-col gap-1.5 pb-2 w-full">
+                  <label htmlFor="name" className="text-xs font-medium text-gray-700">
                     Full Name
                   </label>
                   <input
@@ -86,14 +86,14 @@ const Setting = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="border border-gray-400/30 w-full text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="border border-gray-400/30 w-full text-sm text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     placeholder="Your name ..."
                   />
                 </div>
-                <div className="flex flex-1 flex-col gap-2 pb-2 w-full">
+                <div className="flex flex-1 flex-col gap-1.5 pb-2 w-full">
                   <label
                     htmlFor="jobTitle"
-                    className="font-medium text-gray-700"
+                    className="text-xs font-medium text-gray-700"
                   >
                     Job Title
                   </label>
@@ -103,14 +103,14 @@ const Setting = () => {
                     name="jobTitle"
                     value={formData.jobTitle}
                     onChange={handleChange}
-                    className="border border-gray-400/30 w-full text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="border border-gray-400/30 w-full text-sm text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     placeholder="Senior Product Designer"
                   />
                 </div>
               </div>
 
-              <div className="flex flex-1 flex-col gap-2 pb-2 mt-4">
-                <label htmlFor="email" className="font-medium text-gray-700">
+              <div className="flex flex-1 flex-col gap-1.5 pb-2 mt-3">
+                <label htmlFor="email" className="text-xs font-medium text-gray-700">
                   Email Address
                 </label>
                 <input
@@ -119,15 +119,15 @@ const Setting = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="border border-gray-400/30 w-full text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  placeholder="alex.rivera@devchecklist.com"
+                  className="border border-gray-400/30 w-full text-sm text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="alex.rivera@DevCheck.com"
                 />
               </div>
 
-              <div className="flex flex-1 flex-col gap-2 pb-2 mt-4">
+              <div className="flex flex-1 flex-col gap-1.5 pb-2 mt-3">
                 <label
                   htmlFor="biography"
-                  className="font-medium text-gray-700"
+                  className="text-xs font-medium text-gray-700"
                 >
                   Biography
                 </label>
@@ -136,16 +136,16 @@ const Setting = () => {
                   name="biography"
                   value={formData.biography}
                   onChange={handleChange}
-                  rows={5}
-                  className="border border-gray-400/30 w-full text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                  rows={4}
+                  className="border border-gray-400/30 w-full text-sm text-black bg-gray-400/10 indent-1 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
                   placeholder="Passionate about building developer experience tools and clean UI architectures."
                 />
               </div>
 
-              <div className="flex items-center gap-3 w-full justify-end mt-6">
+              <div className="flex items-center gap-3 w-full justify-end mt-4">
                 <button
                   type="button"
-                  className="flex-1 md:flex-none px-6 py-2.5 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 md:flex-none px-5 py-2 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSaving}
                   onClick={() => {
                     setFormData({
@@ -161,12 +161,12 @@ const Setting = () => {
                 <button
                   disabled={isSaving}
                   type="submit"
-                  className="flex-1 md:flex-none px-8 py-2.5 rounded-lg font-semibold bg-blue-700 text-white hover:bg-blue-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[120px]"
+                  className="flex-1 md:flex-none px-6 py-2 rounded-lg font-medium text-sm bg-blue-700 text-white hover:bg-blue-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]"
                 >
                   {isSaving ? (
                     <>
                       <svg
-                        className="animate-spin h-4 w-4 text-white"
+                        className="animate-spin h-3.5 w-3.5 text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -185,7 +185,7 @@ const Setting = () => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Saving...</span>
+                      <span>Saving</span>
                     </>
                   ) : (
                     "Save Profile"
@@ -196,46 +196,51 @@ const Setting = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 shadow-sm rounded-lg mt-6">
+        <div className="bg-white p-5 shadow-sm rounded-lg mt-6">
           <div>
-            <h3 className="font-semibold text-xl">Notification Preferences</h3>
-            <p className="text-gray-500">
+            <h3 className="font-semibold text-base">Notification Preferences</h3>
+            <p className="text-xs text-gray-500">
               Decide how you want to be notified about task updates.
             </p>
           </div>
-          <div className="border-b border-b-gray-400/20 mt-4 mb-4"></div>
+          <div className="border-b border-b-gray-400/20 mt-3 mb-3"></div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-gray-500">
-                  Receive updates via email
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
+          <div className="space-y-3">
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm font-medium">Email Notifications</p>
+      <p className="text-xs text-gray-500">
+        Receive updates via email
+      </p>
+    </div>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        onChange={(e) => console.log("Email notifications:", e.target.checked)}
+      />
+      <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
+    </label>
+  </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Push Notifications</p>
-                <p className="text-sm text-gray-500">
-                  Receive updates in browser
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  defaultChecked
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm font-medium">Push Notifications</p>
+      <p className="text-xs text-gray-500">
+        Receive updates in browser
+      </p>
+    </div>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        defaultChecked
+        onChange={(e) => console.log("Push notifications:", e.target.checked)}
+      />
+      <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
+    </label>
+  </div>
+</div>
         </div>
       </div>
     </DashboardLayout>
