@@ -12,6 +12,8 @@ type taskInterface = Pick<
   | "priority"
   | "user_id"
   | "project_id"
+  | "source"
+  | "source_id"
 >;
 
 export class Task {
@@ -26,25 +28,16 @@ export class Task {
   priority!: "normal" | "medium" | "high";
   user_id!: string;
   project_id?: string;
+  source?: string;
+  source_id?: string;
   async save(client: Pool | PoolClient = pool) {
     try {
       const fields: string[] = [];
       const values: unknown[] = [];
       const placeholders: string[] = [];
 
-      const allowedFields: (keyof taskInterface)[] = [
-        "title",
-        "description",
-        "due_date",
-        "status",
-        "priority",
-        "user_id",
-        "project_id",
-      ];
-
       let index = 1;
-      for (const key of allowedFields) {
-        const value = this[key];
+      for (const [key, value] of Object.entries(this)) {
         if (value !== undefined) {
           fields.push(key);
           values.push(value);
@@ -159,6 +152,20 @@ export class Task {
     } catch (error) {
       throw new BadRequestError(
         "Error updating task: " + (error as Error).message,
+      );
+    }
+  }
+  static async findByGitHubIssue(
+    client: Pool | PoolClient = pool,
+    { github_issue_id, user_id }: { github_issue_id: string; user_id: string },
+  ) {
+    try {
+      const query = `SELECT * FROM core.tasks WHERE source_id = $1 AND user_id = $2 AND status != 'completed'`;
+      const result = await client.query(query, [github_issue_id, user_id]);
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error finding task by GitHub issue: " + (error as Error).message,
       );
     }
   }

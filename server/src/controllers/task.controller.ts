@@ -51,7 +51,7 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
   });
 
   const savedTask = await task.save(client);
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     message: "Task created successfully",
     task: savedTask,
@@ -92,7 +92,7 @@ export const saveSubtask = asyncHandler(async (req: Request, res: Response) => {
 
   const savedSubtask = await subtask.save(client);
   client.release();
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     message: "Subtask created successfully",
     subtask: savedSubtask,
@@ -106,7 +106,7 @@ export const getSubtasks = asyncHandler(async (req: Request, res: Response) => {
   }
   const subtasks = await SubTask.getByTaskId(client, `${task_id}`);
   client.release();
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     subtasks: subtasks,
   });
@@ -118,7 +118,7 @@ export const getTaskWithSubtasks = asyncHandler(
     if (!task) {
       throw new BadRequestError("Task not found");
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       task: task,
     });
@@ -138,7 +138,7 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
     updates.priority = priority;
   }
   const updatedTask = await Task.updateById(`${task_id}`, updates);
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     task: updatedTask,
   });
@@ -146,7 +146,7 @@ export const updateTask = asyncHandler(async (req: Request, res: Response) => {
 export const deleteTask = asyncHandler(async (req: Request, res: Response) => {
   const { task_id } = req.params;
   await Task.deleteById(`${task_id}`);
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Task deleted successfully",
   });
@@ -155,7 +155,7 @@ export const deleteSubtask = asyncHandler(
   async (req: Request, res: Response) => {
     const { subtask_id } = req.params;
     await SubTask.deleteById(`${subtask_id}`);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Subtask deleted successfully",
     });
@@ -169,7 +169,7 @@ export const getTasksByUserId = asyncHandler(
       throw new BadRequestError("User not found");
     }
     const tasks = await Task.getTaskByUserId(`${user_id}`);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       tasks: tasks,
     });

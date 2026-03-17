@@ -36,13 +36,17 @@ export const createTables = async () => {
     // schema
     await pool.query(`CREATE SCHEMA IF NOT EXISTS core;`);
     await pool.query(`CREATE SCHEMA IF NOT EXISTS session;`);
-
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS integrations;`);
     // --- USERS TABLE ---
     await pool.query(`
       CREATE TABLE IF NOT EXISTS core.users (
         _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         google_id VARCHAR(255) UNIQUE,
         github_id VARCHAR(255) UNIQUE,
+        github_avatar_url TEXT,
+        github_username VARCHAR(255),
+        github_profile_url TEXT,
+        github_access_token TEXT DEFAULT NULL,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
@@ -58,13 +62,16 @@ export const createTables = async () => {
         failed_attempts INTEGER DEFAULT 0,
         lock_until TIMESTAMP NULL,
         is_suspended BOOLEAN DEFAULT FALSE,
+        github_connected BOOLEAN DEFAULT FALSE,
+        github_connected_at TIMESTAMP,
+        sync_personal_repos BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
     await pool.query(`CREATE TABLE IF NOT EXISTS session.tokens(
       user_id UUID NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
-      refresh_token VARCHAR(255) NOT NULL,
+      refresh_token PRIMARY KEY VARCHAR(255) NOT NULL,
       expires_at TIMESTAMP NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
       )
@@ -120,6 +127,8 @@ export const createTables = async () => {
         description VARCHAR(500),
         due_date TIMESTAMP NOT NULL,
         status task_status DEFAULT 'pending',
+        source VARCHAR(50),
+        source_id VARCHAR(255),
         total_subtasks INT DEFAULT 0,
         priority task_priority DEFAULT 'normal',
         created_at TIMESTAMP DEFAULT NOW(),
@@ -140,7 +149,21 @@ export const createTables = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS integrations.github_repositories (
+          _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID UNIQUE NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
+          github_repo_id BIGINT UNIQUE NOT NULL,
+          owner VARCHAR(255) NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          full_name VARCHAR(255) NOT NULL,
+          default_branch VARCHAR(100),
+          connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          visibility VARCHAR(20),
+          repo_url TEXT,
+          last_synced_at TIMESTAMP,
+          active BOOLEAN DEFAULT TRUE );
+      `);
     // --- TRIGGER FUNCTIONS ---
 
     // increment project total_tasks
@@ -261,6 +284,9 @@ export const createTables = async () => {
     await pool.query(
       `CREATE INDEX IF NOT EXISTS idx_session_user_id ON session.tokens(user_id);`,
     );
+    await pool.query(`
+        CREATE INDEX IF NOT EXISTS idx_github_repos_user ON integrations.github_repositories(user_id);
+    `);
     await pool.query(`COMMIT`);
     console.log("Tables created successfully with triggers and indexes.");
   } catch (error) {
