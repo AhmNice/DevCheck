@@ -109,20 +109,22 @@ const taskData: taskProps[] = [
 const Dashboard = () => {
   return (
     <DashboardLayout>
-      <div className="flex-1 p-2 ">
+      <div className="flex-1 p-2">
         <div className="flex flex-col space-y-4">
           <StatsCard />
+
+          {/* Weekly Progress Section */}
           <div className="border border-gray-400/20 bg-white shadow-sm rounded-xl flex-1">
-            <div className="flex p-4 items-center justify-between border-b border-b-gray-400/20">
-              <div className="p-2">
-                <h2 className="text-base font-bold text-gray-900">
+            <div className="flex p-3 items-center justify-between border-b border-b-gray-400/20">
+              <div className="p-1">
+                <h2 className="text-sm font-bold text-gray-900">
                   Weekly Progress
                 </h2>
-                <p className="text-xs text-gray-400 mt-0.5 mb-5">
+                <p className="text-[11px] text-gray-400 mt-0.5 mb-3">
                   Task completion trends across the current week
                 </p>
               </div>
-              <button className="bg-gray-400/10 hover:bg-gray-400/20 text-sm hover: font-semibold rounded-md px-4 py-2">
+              <button className="bg-gray-400/10 hover:bg-gray-400/20 text-xs font-semibold rounded-md px-3 py-1.5">
                 Current Week
               </button>
             </div>
@@ -130,10 +132,13 @@ const Dashboard = () => {
               <WeeklyProgressChart />
             </div>
           </div>
-          <div className="flex py-8 flex-col md:flex-row md:gap-8 gap-4">
-            <div className="border flex-1 p-4 border-gray-400/20 bg-white shadow-sm rounded-xl">
-              <h3 className="p-3 font-bold">Recent Tasks</h3>
-              <div className="w-full  h-0.5 bg-gray-300/20"></div>
+
+          {/* Tasks and Milestones Section */}
+          <div className="flex py-6 flex-col md:flex-row md:gap-6 gap-3">
+            {/* Recent Tasks */}
+            <div className="border flex-1 p-3 border-gray-400/20 bg-white shadow-sm rounded-xl">
+              <h3 className="p-2 text-sm font-bold">Recent Tasks</h3>
+              <div className="w-full h-px bg-gray-300/20"></div>
               {taskData.map((task, i) => (
                 <div key={i}>
                   <MiniTaskCard
@@ -145,8 +150,14 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-            <div className="border flex-1 p-4 border-gray-400/20 bg-white shadow-sm rounded-xl">
-              <h3>Upcoming Milestones</h3>
+
+            {/* Upcoming Milestones */}
+            <div className="border flex-1 p-3 border-gray-400/20 bg-white shadow-sm rounded-xl">
+              <h3 className="p-2 text-sm font-bold">Upcoming Milestones</h3>
+              <div className="w-full h-px bg-gray-300/20 mb-3"></div>
+              <div className="text-xs text-gray-500 p-2">
+                No upcoming milestones
+              </div>
             </div>
           </div>
         </div>

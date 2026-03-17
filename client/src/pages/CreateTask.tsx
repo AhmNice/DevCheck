@@ -98,7 +98,6 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
   const getPriorityTag = (priority: string): string => {
     switch (priority) {
       case "urgent":
-        return "HIGH PRIORITY";
       case "high":
         return "HIGH PRIORITY";
       case "medium":
@@ -187,43 +186,45 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
       {/* Modal Container */}
       <div className="bg-white w-full max-w-[800px] max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-[#cfd7e7]">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary text-3xl">
-              <CheckCircle />
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <div className="text-blue-600 bg-blue-50 p-1.5 rounded-lg">
+              <CheckCircle size={20} />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">
               Create New Task
             </h2>
           </div>
           <button
             onClick={() => setModel(false)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-all"
             disabled={isSaving}
+            aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mx-8 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="mx-6 mt-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-xs font-medium">{error}</p>
           </div>
         )}
 
         {/* Modal Content (Scrollable Area) */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Task Title Section */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-              Task Title <span className="text-red-500">*</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1">
+              Task Title
+              <span className="text-red-500">*</span>
             </label>
             <input
               autoFocus
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="w-full text-xl font-medium border-0 focus:ring-0 bg-transparent p-0 placeholder:text-gray-300 text-gray-900"
+              className="w-full text-base font-medium border-0 focus:ring-0 bg-transparent p-0 placeholder:text-gray-300 text-gray-900"
               placeholder="e.g., Implement OAuth2 flow"
               type="text"
               disabled={isSaving}
@@ -231,17 +232,17 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           </div>
 
           {/* Horizontal Layout for Meta Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Priority Selector */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Priority
               </label>
               <div className="relative">
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="appearance-none w-full px-4 py-3 rounded-lg border border-[#cfd7e7] bg-[#f8f9fc] text-gray-900 text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="appearance-none w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSaving}
                 >
                   <option value="low">Low Priority</option>
@@ -253,26 +254,25 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
             </div>
 
             {/* Due Date Picker */}
-            <div className="space-y-2 relative">
-              <label className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                Due Date <span className="text-red-500">*</span>
+            <div className="space-y-1.5 relative">
+              <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1">
+                Due Date
+                <span className="text-red-500">*</span>
               </label>
               <div
                 onClick={() => !isSaving && setShowCalendar(!showCalendar)}
-                className={`flex items-center gap-2 w-full px-4 py-3 rounded-lg border border-[#cfd7e7] bg-[#f8f9fc] text-base focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all ${
+                className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all ${
                   isSaving
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer hover:bg-gray-100"
                 }`}
               >
-                <span className="material-symbols-outlined text-primary">
-                  <CalendarFold size={16} />
-                </span>
+                <CalendarFold size={16} className="text-blue-500" />
                 <span className="flex-1 text-gray-900">
                   {date instanceof Date ? formatDate(date) : "Select a date"}
                 </span>
                 {date instanceof Date && getDayLabel(date) && (
-                  <span className="text-xs font-medium text-gray-400">
+                  <span className="text-[10px] font-medium text-gray-400 bg-white px-1.5 py-0.5 rounded">
                     {getDayLabel(date)}
                   </span>
                 )}
@@ -280,19 +280,19 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
 
               {/* Calendar Popup */}
               {showCalendar && !isSaving && (
-                <div className="absolute top-full left-0 mt-2 z-10 bg-white rounded-lg shadow-xl border border-[#cfd7e7] p-2">
+                <div className="absolute top-full left-0 mt-1 z-10 bg-white rounded-lg shadow-xl border border-gray-200 p-2">
                   <Calendar
                     onChange={(value) => {
                       setDate(value);
                       setShowCalendar(false);
                     }}
                     value={date}
-                    className="border-0"
+                    className="border-0 text-sm"
                     minDate={new Date()} // Prevent selecting past dates
                     tileClassName={({ date, view }) =>
                       view === "month" &&
                       date.toDateString() === new Date().toDateString()
-                        ? "react-calendar__tile--now bg-blue-700/10 text-primary font-bold"
+                        ? "react-calendar__tile--now bg-blue-50 text-blue-600 font-bold"
                         : ""
                     }
                   />
@@ -302,28 +302,28 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           </div>
 
           {/* Description Field */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold uppercase tracking-wider text-gray-500 flex items-center justify-between">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center justify-between">
               Description
-              <span className="text-[10px] normal-case bg-gray-100 px-2 py-0.5 rounded text-gray-500">
+              <span className="text-[10px] normal-case bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
                 Markdown Supported
               </span>
             </label>
             <textarea
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
-              className="w-full min-h-[120px] rounded-lg border border-[#cfd7e7] bg-[#f8f9fc] p-4 text-gray-900 text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none placeholder:text-gray-400 disabled:opacity-50"
+              className="w-full min-h-[100px] rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none placeholder:text-gray-400 disabled:opacity-50"
               placeholder="Add more details about the technical implementation..."
               disabled={isSaving}
             />
           </div>
 
           {/* Subtasks Section */}
-          <div className="space-y-4">
-            <label className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-              Subtasks
+          <div className="space-y-3">
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Subtasks ({subtasks.filter(s => !s.completed).length} remaining)
             </label>
-            <div className="space-y-2">
+            <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
               {/* Subtask Items */}
               {subtasks.map((subtask) => (
                 <SubtaskCard
@@ -335,16 +335,14 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
               ))}
 
               {/* Add Subtask Input */}
-              <div className="flex items-center gap-3 pt-2">
-                <span className="material-symbols-outlined text-primary/50">
-                  add
-                </span>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-blue-400 text-lg">+</span>
                 <input
                   type="text"
                   value={newSubtask}
                   onChange={(e) => setNewSubtask(e.target.value)}
                   onKeyDown={addSubtask}
-                  className="flex-1 bg-transparent border-0 focus:ring-0 p-0 text-base placeholder:text-gray-400 italic text-gray-900 disabled:opacity-50"
+                  className="flex-1 bg-transparent border-0 focus:ring-0 p-0 text-sm placeholder:text-gray-400 italic text-gray-900 disabled:opacity-50"
                   placeholder="Add a step and press Enter..."
                   disabled={isSaving}
                 />
@@ -354,21 +352,21 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
         </div>
 
         {/* Footer Actions */}
-        <div className="px-8 py-6 border-t border-[#cfd7e7] bg-gray-50/50 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="hidden md:flex items-center gap-2 text-xs text-gray-400">
-            <kbd className="px-2 py-1 bg-white border border-gray-200 rounded shadow-sm">
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50/50 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="hidden md:flex items-center gap-1.5 text-[10px] text-gray-400">
+            <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono shadow-sm">
               {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}
             </kbd>
             +
-            <kbd className="px-2 py-1 bg-white border border-gray-200 rounded shadow-sm">
+            <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono shadow-sm">
               Enter
             </kbd>
             <span>to quick save</span>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto">
             <button
               onClick={() => setModel(false)}
-              className="flex-1 md:flex-none px-6 py-2.5 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 md:flex-none px-4 py-2 text-sm rounded-lg font-medium text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSaving}
             >
               Cancel
@@ -376,12 +374,12 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
             <button
               onClick={handleSaveTask}
               disabled={isSaving || !taskTitle.trim() || !date}
-              className="flex-1 md:flex-none px-8 py-2.5 rounded-lg font-semibold bg-primary text-white hover:bg-primary-700/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-700 flex items-center justify-center gap-2 min-w-[120px]"
+              className="flex-1 md:flex-none px-5 py-2 text-sm rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]"
             >
               {isSaving ? (
                 <>
                   <svg
-                    className="animate-spin h-4 w-4 text-white"
+                    className="animate-spin h-3.5 w-3.5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -400,7 +398,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Saving...</span>
+                  <span>Saving</span>
                 </>
               ) : (
                 "Save Task"
