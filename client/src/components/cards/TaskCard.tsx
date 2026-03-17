@@ -6,7 +6,6 @@ export interface taskProps {
   tag: string;
   id?: number;
   title: string;
-
   description?: string;
   percentage?: number;
   startDate: string;
@@ -17,86 +16,100 @@ export interface taskProps {
 export const MiniTaskCard = ({ title, startDate, endDate }: taskProps) => {
   return (
     <div>
-      <div className="flex items-center px-6 justify-between">
-        <div className="flex items-center gap-6 py-4">
-          <div className="rounded-full w-4 h-4 bg-blue-500"></div>
+      <div className="flex items-center px-4 justify-between hover:bg-gray-50/50 transition-colors">
+        <div className="flex items-center gap-4 py-3">
+          <div className="rounded-full w-3 h-3 bg-blue-500 flex-shrink-0"></div>
           <div>
-            <h2 className=" text-gray-700 font-semibold">{title}</h2>
-            <div className="flex items-center gap-6 text-gray-600">
-              <div className="flex text-sm items-center gap-2">
-                <Calendar size={16} /> <span>{startDate}</span>
+            <h2 className="text-sm font-medium text-gray-700">{title}</h2>
+            <div className="flex items-center gap-4 text-gray-500 mt-1">
+              <div className="flex text-xs items-center gap-1.5">
+                <Calendar size={14} />
+                <span>{startDate}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={16} /> <span>{endDate}</span>
+              <div className="flex items-center gap-1.5 text-xs">
+                <Calendar size={14} />
+                <span>{endDate}</span>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <ChevronRight size={20} className="text-gray-600" />
+          <ChevronRight size={18} className="text-gray-400" />
         </div>
       </div>
-      <div className="w-full  h-0.5 bg-gray-300/20"></div>
+      <div className="w-full h-px bg-gray-200/60"></div>
     </div>
   );
 };
 
 const TaskCard = ({
+  id,
   tag,
   title,
   description,
-  percentage,
+  percentage = 0,
   startDate,
   endDate,
   subtaskData,
 }: taskProps) => {
-  console.log(subtaskData);
   const navigate = useNavigate();
   let tagStyle = "";
 
   if (tag.includes("HIGH")) {
-    tagStyle = "bg-red-100 text-red-600";
+    tagStyle = "bg-red-50 text-red-600 border border-red-200/50";
   } else if (tag.includes("MEDIUM")) {
-    tagStyle = "bg-orange-100 text-orange-600";
+    tagStyle = "bg-orange-50 text-orange-600 border border-orange-200/50";
   } else if (tag.includes("LOW")) {
-    tagStyle = "bg-green-100 text-green-600";
+    tagStyle = "bg-green-50 text-green-600 border border-green-200/50";
   }
 
   return (
-    <div className="bg-white border border-gray-400/20 shadow-sm  rounded-2xl p-6">
-      <span className={`text-sm px-4 py-1 rounded-lg font-bold ${tagStyle}`}>
-        {tag}
-      </span>
+    <div className="bg-white border border-gray-200/60 shadow-sm rounded-xl p-5 hover:shadow-md transition-all duration-300">
+      <div className="flex items-center justify-between mb-3">
+        <span className={`text-xs px-3 py-1 rounded-md font-semibold ${tagStyle}`}>
+          {tag}
+        </span>
+      </div>
 
-      <h2 className="pt-5 font-bold text-lg pb-3">{title}</h2>
-      <p className=" text-gray-400  mt-0.5 mb-5">{description}</p>
+      <h2 className="font-semibold text-base text-gray-900 mb-2 line-clamp-2">
+        {title}
+      </h2>
+
+      {description && (
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2">
+          {description}
+        </p>
+      )}
 
       <div className="mb-4">
-        <div className="flex justify-between">
-          <p className="text-gray-500 text-sm">Progress</p>
-          <p className="font-bold">{percentage}%</p>
+        <div className="flex justify-between items-center mb-1.5">
+          <p className="text-gray-500 text-xs">Progress</p>
+          <p className="font-semibold text-sm">{percentage}%</p>
         </div>
-        <div className="w-full h-2 bg-primary-700/20 rounded-full">
+        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             style={{ width: `${percentage}%` }}
-            className="bg-primary rounded-full h-2 transition-all duration-300"
+            className="bg-blue-500 rounded-full h-1.5 transition-all duration-300"
           ></div>
         </div>
       </div>
 
-      <div className="w-full  h-0.5 bg-gray-300/20"></div>
-      <div className="flex mt-4 items-center justify-between text-gray-500">
-        <div className="flex items-center gap-6 ">
-          <div className="flex items-center gap-2">
-            <Calendar size={16} /> <span>{startDate}</span>
+      <div className="w-full h-px bg-gray-200/60 my-3"></div>
+
+      <div className="flex items-center justify-between text-gray-500">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs">
+            <Calendar size={14} className="text-gray-400" />
+            <span>{startDate}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} /> <span>{endDate}</span>
+          <div className="flex items-center gap-1.5 text-xs">
+            <Calendar size={14} className="text-gray-400" />
+            <span>{endDate}</span>
           </div>
         </div>
-        <div
+        <button
           onClick={() =>
-            navigate("/task-details", {
+            navigate(`/task/${title}/${id}`, {
               state: {
                 tag,
                 title,
@@ -108,10 +121,11 @@ const TaskCard = ({
               },
             })
           }
-          className="cursor-pointer"
+          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors group"
+          aria-label="View task details"
         >
-          <ExternalLink size={16} />
-        </div>
+          <ExternalLink size={16} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+        </button>
       </div>
     </div>
   );

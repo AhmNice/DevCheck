@@ -1,14 +1,56 @@
 import { Bell, Settings, Search, Menu } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import type { PropsWithChildren } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 type DashboardLayoutProps = PropsWithChildren;
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // Generate breadcrumbs based on current path
+  const getBreadcrumbs = () => {
+    const path = location.pathname;
+    const segments = path.split("/").filter((seg) => seg !== "");
+
+    if (segments.length === 0 || segments[0] === "dashboard") {
+      return {
+        main: "Dashboard",
+        sub: "Overview",
+      };
+    }
+
+    // Capitalize first letter and format the segment
+    const formatSegment = (segment: string) => {
+      const decodedSegment = (() => {
+        try {
+          return decodeURIComponent(segment);
+        } catch {
+          return segment;
+        }
+      })();
+
+      return decodedSegment
+        .split(/[\s-]+/)
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+        .replace(/^\d+/, "")
+        .replace(/[^a-zA-Z0-9\s]/g, "")
+        .replace(/\s+/g, " ")
+        .trim(); // Remove leading numbers and special characters
+    };
+
+    const main = formatSegment(segments[0]);
+    const sub = segments.length > 1 ? formatSegment(segments[1]) : "";
+
+    return { main, sub };
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
@@ -48,12 +90,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
-              <div className="hidden md:relative md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div className="relative flex items-center">
+                <Search className="absolute left-3 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64"
+                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
               </div>
 
@@ -87,21 +129,35 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </div>
 
+          {/* Desktop Breadcrumbs */}
           <div className="hidden md:block px-6 py-2 border-t border-gray-100 bg-gray-50/50">
             <div className="flex items-center gap-2 text-xs">
               <span className="text-gray-400">Pages</span>
               <span className="text-gray-300">/</span>
-              <span className="text-gray-600 font-medium">Dashboard</span>
-              <span className="text-gray-300">/</span>
-              <span className="text-gray-400">Overview</span>
+              <span className="text-gray-600 font-medium">
+                {breadcrumbs.main}
+              </span>
+              {breadcrumbs.sub && (
+                <>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-gray-400">{breadcrumbs.sub}</span>
+                </>
+              )}
             </div>
           </div>
 
+          {/* Mobile Breadcrumbs - Dynamic based on path */}
           <div className="md:hidden px-4 py-2 border-t border-gray-100 bg-gray-50/50">
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-gray-600 font-medium">Dashboard</span>
-              <span className="text-gray-300">/</span>
-              <span className="text-gray-400">Overview</span>
+              <span className="text-gray-600 font-medium">
+                {breadcrumbs.main}
+              </span>
+              {breadcrumbs.sub && (
+                <>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-gray-400">{breadcrumbs.sub}</span>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -113,7 +169,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <footer className="py-4 px-4 md:px-6 border-t border-gray-200 bg-white">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-gray-500">
-              <p>© 2024 DevCheckList. All rights reserved.</p>
+              <p>© 2024 DevCheck. All rights reserved.</p>
               <div className="flex gap-4">
                 <a href="#" className="hover:text-gray-700 transition-colors">
                   Privacy
