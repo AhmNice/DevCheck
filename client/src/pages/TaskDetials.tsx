@@ -104,7 +104,7 @@ export const TaskDetials = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold tracking-tight hover:bg-blue-700 transition-all">
+                <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold tracking-tight hover:bg-primary-700 transition-all">
                   <CheckCircle size={16} />
                   <span>Mark Complete</span>
                 </button>
@@ -168,9 +168,9 @@ export const TaskDetials = () => {
                     {completedTaskCount} of {subTasks.length} completed
                   </p>
                 </div>
-                <div className="w-32 bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="w-32 bg-primary/15 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-primary h-full transition-all duration-300"
+                    className="bg-primary-700 h-full transition-all duration-300"
                     style={{
                       width: `${progressPercentage}%`,
                     }}
@@ -195,10 +195,10 @@ export const TaskDetials = () => {
                 >
                   <button
                     type="submit"
-                    className="flex items-center justify-center text-white bg-primary rounded-full p-1 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex text-white items-center justify-center bg-primary rounded-full p-1 hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!subtaskInput.trim()}
                   >
-                    <Plus size={20} />
+                    <Plus size={20} className="text-white" />
                   </button>
                   <input
                     type="text"

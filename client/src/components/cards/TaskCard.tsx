@@ -76,10 +76,10 @@ const TaskCard = ({
           <p className="text-gray-500 text-sm">Progress</p>
           <p className="font-bold">{percentage}%</p>
         </div>
-        <div className="w-full h-2 bg-blue-700/20 rounded-full">
+        <div className="w-full h-2 bg-primary-700/20 rounded-full">
           <div
             style={{ width: `${percentage}%` }}
-            className="bg-blue-500 rounded-full h-2 transition-all duration-300"
+            className="bg-primary rounded-full h-2 transition-all duration-300"
           ></div>
         </div>
       </div>

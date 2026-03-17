@@ -15,6 +15,7 @@ import Import from "./pages/Import";
 import Analytics from "./pages/Analytics";
 import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
+import Setting from "./pages/Setting";
 
 function App() {
   const router = createBrowserRouter(
@@ -30,6 +31,7 @@ function App() {
         <Route path="analytics" element={<Analytics />} />
         <Route path="task-details" element={<TaskDetials />} />
         <Route path="task-create" element={<CreateTask />} />
+        <Route path="setting" element={<Setting />} />
       </Route>,
     ),
   );

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../../components/LandingPageComponents/Header";
 import { FaArrowRight, FaGithub } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
@@ -14,10 +13,14 @@ const Signup = () => {
     console.log(formData);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div className="h-screen bg-[#f8f9fb]">
-      <Header />
-      <div className="flex items-center justify-center h-[90%]  max-w-full mx-auto">
+      <div className="flex items-center justify-center h-screen  max-w-full mx-auto">
         <div className="text-center">
           <div>
             <h1 className="text-[#0d121b] mb-2 text-4xl font-semibold xl:text-4xl">
@@ -25,7 +28,7 @@ const Signup = () => {
             </h1>
             <p className="mb-4"> Manage your technical tasks with focus</p>
           </div>
-          <div className="bg-white p-8 rounded-xl border border-gray-400/20 text-left">
+          <div className="bg-white p-8 shadow-lg rounded-xl border border-gray-400/20 text-left">
             <form action="" className="space-y-6" onSubmit={handleSubmit}>
               <div className="flex flex-col">
                 <label
@@ -38,6 +41,7 @@ const Signup = () => {
                   className="border border-gray-400/20 outline-blue-400/10  rounded-md indent-2 p-2"
                   name="name"
                   type="text"
+                  onChange={handleChange}
                   placeholder={`Full Name`}
                 />
               </div>
@@ -52,6 +56,7 @@ const Signup = () => {
                   className="border border-gray-400/20 outline-blue-400/10  rounded-md indent-2 p-2"
                   name="email"
                   type="text"
+                  onChange={handleChange}
                   placeholder={`name@company.com`}
                 />
               </div>
@@ -66,6 +71,7 @@ const Signup = () => {
                   className="border border-gray-400/10 outline-blue-400/10  rounded-md indent-2 p-2"
                   type="password"
                   name="email"
+                  onChange={handleChange}
                   placeholder="...."
                 />
               </div>
