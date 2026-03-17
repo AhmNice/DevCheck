@@ -14,7 +14,7 @@ const Header = () => {
     <header className="px-4 md:px-20 lg:px-40 lg:py-4 flex items-center justify-between bg-[#F8FAFC] shadow-md shadow-black/10 whitespace-nowrap">
       <div className="flex max-w-[1200px] mx-auto items-center justify-between flex-1">
         <div className="flex items-center gap-2">
-          <div className="size-8 flex items-center justify-center bg-primary text-black rounded-lg">
+          <div className="size-8 flex items-center justify-center bg-blue-700 text-black rounded-lg">
             <span className="material-symbols-outlined text-xl">
               <FaList />
             </span>

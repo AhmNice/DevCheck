@@ -292,7 +292,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
                     tileClassName={({ date, view }) =>
                       view === "month" &&
                       date.toDateString() === new Date().toDateString()
-                        ? "react-calendar__tile--now bg-primary/10 text-primary font-bold"
+                        ? "react-calendar__tile--now bg-blue-700/10 text-primary font-bold"
                         : ""
                     }
                   />
@@ -376,7 +376,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
             <button
               onClick={handleSaveTask}
               disabled={isSaving || !taskTitle.trim() || !date}
-              className="flex-1 md:flex-none px-8 py-2.5 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary flex items-center justify-center gap-2 min-w-[120px]"
+              className="flex-1 md:flex-none px-8 py-2.5 rounded-lg font-semibold bg-primary text-white hover:bg-primary-700/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-700 flex items-center justify-center gap-2 min-w-[120px]"
             >
               {isSaving ? (
                 <>

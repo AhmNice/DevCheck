@@ -116,7 +116,7 @@ const pieData = [
 const Analytics = () => {
   return (
     <DashboardLayout>
-      <div className="p-6 space-y-8">
+      <div className="p-2 space-y-8">
         <StatsCard />
         <div className="flex lg:flex-row flex-col items-center gap-6">
           <div className="flex-1 shadow-sm w-full rounded-2xl overflow-hidden">
@@ -125,8 +125,8 @@ const Analytics = () => {
           <TaskPieChart data={pieData} />
         </div>
         <div>
-          <div className="flex gap-8">
-            <div className="rounded-lg w-[30%] py-8 space-y-2 flex flex-col text-blue-100 p-4 bg-blue-600 ">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="rounded-lg md:w-[30%]    py-8 space-y-2 flex flex-col  text-blue-100 p-4 bg-blue-600 ">
               <div className="p-2  self-start text-white bg-blue-300 rounded-lg">
                 <Lightbulb />
               </div>
