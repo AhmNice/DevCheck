@@ -4,6 +4,8 @@ export interface TaskInterface {
   project_id?: string;
   title: string;
   description?: string;
+  source?: string;
+  source_id?: string;
   due_date: Date;
   status: "pending" | "in_progress" | "completed";
   priority: "normal" | "medium" | "high";

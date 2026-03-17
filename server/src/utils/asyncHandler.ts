@@ -14,9 +14,11 @@ export const asyncHandler = <
     req: Request<ReqParams, ResBody, ReqBody, ReqQuery>,
     res: Response<ResBody, Locals>,
     next: NextFunction,
-  ) => Promise<void>,
+  ) => Promise<unknown> | unknown,
 ): RequestHandler<ReqParams, ResBody, ReqBody, ReqQuery> => {
   return (req, res, next) => {
-    fn(req, res as Response<ResBody, Locals>, next).catch(next);
+    Promise.resolve(fn(req, res as Response<ResBody, Locals>, next)).catch(
+      next,
+    );
   };
 };
