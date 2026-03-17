@@ -29,7 +29,7 @@ function App() {
         <Route path="task" element={<Tasks />} />
         <Route path="import" element={<Import />} />
         <Route path="analytics" element={<Analytics />} />
-        <Route path="task-details" element={<TaskDetials />} />
+        <Route path="task/:title/:id" element={<TaskDetials />} />
         <Route path="task-create" element={<CreateTask />} />
         <Route path="setting" element={<Setting />} />
       </Route>,

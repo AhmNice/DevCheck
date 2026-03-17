@@ -190,3 +190,184 @@ h6 {
 .react-calendar--selectRange .react-calendar__tile--hover {
   background-color: #f3f4f6;
 }
+/* ===== TYPOGRAPHY SYSTEM ===== */
+@layer base {
+  /* Heading Hierarchy */
+  h1, .page-title {
+    @apply text-2xl font-bold text-gray-900;
+  }
+
+  h2, .section-title {
+    @apply text-lg font-semibold text-gray-900;
+  }
+
+  h3, .card-title {
+    @apply text-base font-medium text-gray-900;
+  }
+
+  h4, .subsection-title {
+    @apply text-sm font-medium text-gray-700;
+  }
+
+  /* Body Text */
+  .body-default {
+    @apply text-sm text-gray-600;
+  }
+
+  .body-small {
+    @apply text-xs text-gray-500;
+  }
+
+  /* UI Elements */
+  .label {
+    @apply text-xs uppercase tracking-wide text-gray-500;
+  }
+
+  .badge {
+    @apply text-xs font-medium px-2 py-0.5 rounded-md;
+  }
+
+  .button-primary {
+    @apply text-sm font-medium;
+  }
+
+  .button-secondary {
+    @apply text-xs font-medium;
+  }
+
+  .input-text {
+    @apply text-sm;
+  }
+
+  .breadcrumb {
+    @apply text-xs text-gray-500;
+  }
+
+  .timestamp {
+    @apply text-xs text-gray-500;
+  }
+
+  /* Card Styles */
+  .stats-card-title {
+    @apply text-xs uppercase tracking-wide text-gray-500;
+  }
+
+  .stats-card-value {
+    @apply text-2xl font-bold text-gray-900;
+  }
+
+  .feature-card-title {
+    @apply text-base font-semibold text-gray-900;
+  }
+
+  .feature-card-description {
+    @apply text-sm text-gray-600;
+  }
+
+  .task-card-tag {
+    @apply text-xs font-medium px-2 py-1 rounded-md;
+  }
+
+  .task-card-title {
+    @apply text-base font-semibold text-gray-900;
+  }
+
+  .task-card-description {
+    @apply text-sm text-gray-600;
+  }
+
+  .task-card-progress-label {
+    @apply text-xs text-gray-500;
+  }
+
+  .task-card-progress-value {
+    @apply text-sm font-semibold;
+  }
+
+  .task-card-date {
+    @apply text-xs text-gray-500;
+  }
+
+  .mini-task-title {
+    @apply text-sm font-medium text-gray-700;
+  }
+
+  .mini-task-date {
+    @apply text-xs text-gray-500;
+  }
+
+  .subtask-text {
+    @apply text-sm;
+  }
+
+  .subtask-text-completed {
+    @apply text-sm line-through text-gray-400;
+  }
+
+  /* Form Elements */
+  .form-label {
+    @apply text-xs uppercase tracking-wide text-gray-500;
+  }
+
+  .form-input {
+    @apply text-sm;
+  }
+
+  .form-select {
+    @apply text-sm;
+  }
+
+  .form-textarea {
+    @apply text-sm;
+  }
+
+  /* Analytics */
+  .analytics-section-title {
+    @apply text-base font-semibold text-gray-900;
+  }
+
+  .analytics-chart-title {
+    @apply text-sm font-semibold text-gray-700;
+  }
+
+  .insight-card-title {
+    @apply text-base font-bold text-white;
+  }
+
+  .insight-card-body {
+    @apply text-sm text-blue-100;
+  }
+
+  .table-header {
+    @apply text-xs font-medium uppercase tracking-wide text-gray-500;
+  }
+
+  .table-cell-primary {
+    @apply text-sm text-gray-900;
+  }
+
+  .table-cell-secondary {
+    @apply text-xs text-gray-500;
+  }
+
+  /* Navigation */
+  .sidebar-menu-item {
+    @apply text-sm font-medium;
+  }
+
+  .sidebar-label {
+    @apply text-xs uppercase tracking-wider text-gray-400;
+  }
+
+  .sidebar-tooltip {
+    @apply text-xs;
+  }
+
+  .breadcrumb-item {
+    @apply text-xs;
+  }
+
+  .footer-text {
+    @apply text-xs text-gray-500;
+  }
+}
