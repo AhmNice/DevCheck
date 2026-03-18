@@ -6,6 +6,7 @@ import UserInterface from "../interface/user.interface.js";
 import { generateRandomPassword } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
 import axios from "axios";
+import { Request } from "express";
 
 type UserType = Pick<
   UserInterface,
@@ -18,6 +19,9 @@ type UserType = Pick<
   | "github_id"
   | "is_verified"
   | "github_access_token"
+  | "github_username"
+  | "github_profile_url"
+  | "github_avatar_url"
 >;
 
 passport.use(
@@ -27,8 +31,10 @@ passport.use(
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       callbackURL: `${process.env.SERVER_URL}/api/auth/github/callback`,
       scope: ["read:user", "user:email"],
+      passReqToCallback: true,
     },
     async (
+      req: Request,
       accessToken: string,
       _refreshToken: string,
       profile: Profile,
@@ -61,6 +67,23 @@ passport.use(
             new BadRequestError("We couldn't access your GitHub email."),
           );
         }
+        if (req.user && req.user.user_id) {
+          const loggedInUser = await User.findById(req.user.user_id);
+          if (!loggedInUser) {
+            return done(new BadRequestError("Logged-in user not found."));
+          }
+          await User.updateUserById(loggedInUser._id, {
+            github_id: profile.id,
+            github_username: profile.username || null,
+            github_profile_url: profile.profileUrl || null,
+            github_avatar_url: profile.photos?.[0].value || null,
+            github_access_token: accessToken,
+            github_connected: true,
+            github_connected_at: new Date(),
+          });
+
+          return done(null, loggedInUser);
+        }
 
         const randomPassword = generateRandomPassword();
         const passwordHash = await bcrypt.hash(randomPassword, 10);
@@ -75,6 +98,9 @@ passport.use(
           google_id: null,
           is_verified: true,
           github_access_token: accessToken,
+          github_username: profile.username || null,
+          github_profile_url: profile.profileUrl || null,
+          github_avatar_url: profile.photos?.[0].value || null,
         };
 
         let existingUser = await User.findByGitHubId(profile.id);
@@ -83,7 +109,6 @@ passport.use(
           const newUser = new User(user);
           existingUser = await newUser.githubSave();
         }
-
         done(null, existingUser);
       } catch (error) {
         console.error("GitHub OAuth error:", error);
