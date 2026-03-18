@@ -105,10 +105,16 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
   await nSession.createSession(res);
   await AuthSecurityService.reset(user._id);
-  return res.status(200).json({
+  const {
+    password: _p,
+    resetpassword_token_expiry: _rte,
+    resetpassword_token: _rt,
+    ...userWithoutPassword
+  } = user;
+  res.json({
     success: true,
     message: "Login successful",
-    user,
+    user: userWithoutPassword,
   });
 });
 export const googleAuthCallback = (

@@ -17,6 +17,7 @@ import {
 } from "../utils/inputValidator.js";
 import passport from "passport";
 import { rateLimiter } from "../utils/rateLimiter.js";
+import { verifySession } from "../middleware/verifysession.js";
 
 authRouter.post(
   "/user/register",
@@ -48,6 +49,11 @@ authRouter.get(
   "/github-auth",
   rateLimiter({ maxTokens: 20, refillInterval: 60 }),
   passport.authenticate("github", { scope: ["user:email"] }),
+);
+authRouter.post(
+  "/connect/github",
+  verifySession,
+  passport.authenticate("github", { scope: ["read:user", "user:email"] }),
 );
 authRouter.get("/google/callback", googleAuthCallback);
 authRouter.get("/github/callback", githubAuthCallback);

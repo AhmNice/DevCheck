@@ -341,4 +341,34 @@ export class User implements UserType {
     } = result.rows[0];
     return cleanedUser;
   }
+  static async updateUserById(
+    user_id: string,
+    updates: Partial<UserInterface>,
+  ) {
+    const fields = [];
+    const values = [];
+    let index = 1;
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined) {
+        fields.push(`${key} = $${index}`);
+        values.push(value);
+        index++;
+      }
+    }
+    if (fields.length === 0) {
+      throw new BadRequestError("No fields to update");
+    }
+    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE user_id = $${index}`;
+    values.push(user_id);
+    let result;
+    try {
+      result = await pool.query(query, values);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error updating user: " + (error as Error).message,
+      );
+    }
+    return result.rows[0];
+  }
 }

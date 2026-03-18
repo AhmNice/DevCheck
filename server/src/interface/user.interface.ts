@@ -2,6 +2,11 @@ export default interface UserInterface {
   _id: string;
   google_id: string | null;
   github_id: string | null;
+  github_username: string | null;
+  github_profile_url: string | null;
+  github_avatar_url: string | null;
+  github_connected: boolean;
+  github_connected_at: Date | null;
   name: string;
   email: string;
   password: string | null;
