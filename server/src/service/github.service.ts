@@ -15,9 +15,13 @@ export class GitHubService {
   static searchRepos = async (query: string, accessToken: string) => {
     try {
       const octokit = new Octokit({ auth: accessToken });
-      const { data: repos } = await octokit.repos.listForAuthenticatedUser({
-        per_page: 100,
-      });
+
+      const repos = await octokit.paginate(
+        octokit.repos.listForAuthenticatedUser,
+        {
+          per_page: 100,
+        },
+      );
       const filteredRepos = repos.filter((repo) =>
         repo.name.toLowerCase().includes(query.toLowerCase()),
       );

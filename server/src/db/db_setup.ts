@@ -152,7 +152,7 @@ export const createTables = async () => {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS integrations.github_repositories (
           _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          user_id UUID UNIQUE NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
+          user_id UUID  NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
           github_repo_id BIGINT UNIQUE NOT NULL,
           owner VARCHAR(255) NOT NULL,
           name VARCHAR(255) NOT NULL,

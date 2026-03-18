@@ -187,7 +187,7 @@ On success:
 
 ## 5. Connect GitHub Account
 
-**POST** `/auth/connect/github`
+**GET** `/auth/connect/github`
 
 Connect a GitHub account to an existing user.
 

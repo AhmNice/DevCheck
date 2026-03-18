@@ -106,8 +106,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   await AuthSecurityService.reset(user._id);
   const {
     password: _p,
-    resetpassword_token_expiry: _rte,
-    resetpassword_token: _rt,
+    resetPassword_token_expiry: _rte,
+    resetPassword_token: _rt,
     ...userWithoutPassword
   } = user;
   res.json({

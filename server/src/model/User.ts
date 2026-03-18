@@ -293,7 +293,23 @@ export class User implements UserType {
     const values = [];
     let index = 1;
 
+    const allowedUpdateFields = new Set([
+      "name",
+      "email",
+      "password",
+      "account_role",
+      "google_id",
+      "profile_picture",
+      "github_id",
+      "otp",
+      "otp_expiry",
+      "github_access_token",
+    ]);
+
     for (const [key, value] of Object.entries(updates)) {
+      if (!allowedUpdateFields.has(key as keyof UserInterface)) {
+        continue;
+      }
       if (value !== undefined) {
         fields.push(`${key} = $${index}`);
         values.push(value);
@@ -349,7 +365,23 @@ export class User implements UserType {
     const values = [];
     let index = 1;
 
+    const allowedUpdateFields = new Set([
+      "name",
+      "email",
+      "password",
+      "account_role",
+      "google_id",
+      "profile_picture",
+      "github_id",
+      "otp",
+      "otp_expiry",
+      "github_access_token",
+    ]);
+
     for (const [key, value] of Object.entries(updates)) {
+      if (!allowedUpdateFields.has(key as keyof UserInterface)) {
+        continue;
+      }
       if (value !== undefined) {
         fields.push(`${key} = $${index}`);
         values.push(value);
@@ -359,7 +391,7 @@ export class User implements UserType {
     if (fields.length === 0) {
       throw new BadRequestError("No fields to update");
     }
-    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE user_id = $${index}`;
+    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE _id = $${index}`;
     values.push(user_id);
     let result;
     try {
