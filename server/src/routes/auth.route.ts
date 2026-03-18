@@ -50,7 +50,7 @@ authRouter.get(
   rateLimiter({ maxTokens: 20, refillInterval: 60 }),
   passport.authenticate("github", { scope: ["user:email"] }),
 );
-authRouter.post(
+authRouter.get(
   "/connect/github",
   verifySession,
   passport.authenticate("github", { scope: ["read:user", "user:email"] }),

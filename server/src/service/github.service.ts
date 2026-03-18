@@ -2,11 +2,6 @@ import { Octokit } from "@octokit/rest";
 import { GitHubRepo } from "../model/Repo.js";
 
 export class GitHubService {
-  private octokit: Octokit;
-
-  constructor() {
-    this.octokit = new Octokit();
-  }
   static getUserRepos = async (accessToken: string) => {
     try {
       const octokitWithAuth = new Octokit({ auth: accessToken });

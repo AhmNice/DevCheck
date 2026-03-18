@@ -15,7 +15,7 @@ export const createGitHubWebhook = async (
       url:
         config.NODE_ENV === "development"
           ? config.DEV_WEBHOOK_URL
-          : "https://devcheck.app/api/webhooks/github",
+          : config.PROD_WEBHOOK_URL,
       secret: config.GITHUB_WEBHOOK_SECRET,
       content_type: "json",
     },

@@ -396,7 +396,7 @@ Authorization: Bearer <github_access_token>
 
 ## GitHub Issues Webhook
 
-**POST** `/webhook/github`
+**POST** `/webhooks/github`
 
 ### Headers
 

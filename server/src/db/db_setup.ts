@@ -71,7 +71,7 @@ export const createTables = async () => {
     `);
     await pool.query(`CREATE TABLE IF NOT EXISTS session.tokens(
       user_id UUID NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
-      refresh_token PRIMARY KEY VARCHAR(255) NOT NULL,
+      refresh_token VARCHAR(255) PRIMARY KEY NOT NULL,
       expires_at TIMESTAMP NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
       )

@@ -13,6 +13,7 @@ import taskRouter from "./routes/task.route.js";
 import projectRouter from "./routes/project.route.js";
 import cookieParser from "cookie-parser";
 import githubRoute from "./routes/github.route.js";
+import webhookRoute from "./routes/webhook.route.js";
 
 app.use(cookieParser());
 app.use(passport.initialize());
@@ -22,6 +23,7 @@ app.use("/api/tasks", taskRouter);
 app.use("/api/test", testRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/integrations/github", githubRoute);
+app.use("/api/webhooks", webhookRoute);
 app.use(globalErrorHandler);
 let server: ReturnType<typeof app.listen>;
 
