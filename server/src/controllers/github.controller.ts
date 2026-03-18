@@ -95,15 +95,14 @@ export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
   if (existingRepo) {
     throw new BadRequestError("Repository is already connected");
   }
-
+  await createGitHubWebhook(accessToken, {
+    owner,
+    repo,
+  });
   const connectedRepo = await GitHubService.connectRepo({
     user_id,
     accessToken,
     repoFullName,
-  });
-  await createGitHubWebhook(accessToken, {
-    owner,
-    repo,
   });
 
   return res.json({

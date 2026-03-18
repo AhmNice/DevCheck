@@ -30,6 +30,7 @@ interface Config {
   GOOGLE_CLIENT_SECRET: string;
   DEV_WEBHOOK_URL: string;
   GITHUB_WEBHOOK_SECRET: string;
+  PROD_WEBHOOK_URL: string;
 }
 
 const config: Config = {
@@ -61,5 +62,6 @@ const config: Config = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
   DEV_WEBHOOK_URL: process.env.DEV_WEBHOOK_URL!,
   GITHUB_WEBHOOK_SECRET: process.env.GITHUB_WEBHOOK_SECRET!,
+  PROD_WEBHOOK_URL: process.env.PROD_WEBHOOK_URL!,
 };
 export default config;
