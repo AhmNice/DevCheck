@@ -8,18 +8,14 @@ import {
 } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
 import passport from "passport";
-import {
-  sendOTPEmail,
-  sendPasswordResetEmail,
-  sendPasswordResetRequestEmail,
-  sendWelcomeEmail,
-} from "../mail/service.js";
+
 import config from "../config/config.js";
 import UserInterface from "../interface/user.interface.js";
 import crypto from "crypto";
 import { Session } from "../model/Session.js";
 import { AuthSecurityService } from "../service/authSecurity.service.js";
-
+import { EmailService } from "../service/Email.service.js";
+const emailService = new EmailService();
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
   if (await User.exists(email)) {
@@ -39,7 +35,10 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     github_id: null,
   });
   const savedUser = await user.save();
-  await sendOTPEmail({ name: savedUser.name, email: savedUser.email }, otp);
+  await emailService.sendOTPMail(
+    { name: savedUser.name, email: savedUser.email },
+    otp,
+  );
   res.status(201).json({
     success: true,
     message: "User registered successfully",
@@ -70,9 +69,9 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   };
   if (purpose === "verification") {
     updates.is_verified = true;
-    await sendWelcomeEmail({ name: user.name, email: user.email });
+    await emailService.sendWelcomeMail({ name: user.name, email: user.email });
   } else if (purpose === "password_reset") {
-    await sendPasswordResetEmail(
+    await emailService.sendPasswordResetRequestMail(
       { name: user.name, email: user.email },
       `${config.CLIENT_URL}/support`,
       `${config.CLIENT_URL}/login`,
@@ -201,7 +200,7 @@ export const requestPasswordReset = asyncHandler(
       resetPassword_token: token.hashedToken,
       resetPassword_token_expiry: token.expiresAt,
     });
-    await sendPasswordResetRequestEmail(
+    await emailService.sendPasswordResetRequestMail(
       user,
       `${config.CLIENT_URL}/reset-password/${token.token}`,
       "1 hour",
@@ -236,10 +235,9 @@ export const resetPassword = asyncHandler(
       resetPassword_token: null,
       resetPassword_token_expiry: null,
     });
-    await sendPasswordResetEmail(
+    await emailService.sendPasswordResetSuccessMail(
       { name: user.name, email: user.email },
       `${config.CLIENT_URL}/support`,
-      `${config.CLIENT_URL}/login`,
     );
     return res.status(200).json({
       success: true,
