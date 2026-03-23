@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toastError } from "../components/Toast";
 
-const devCheck = axios.create({
+const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
   withCredentials: true,
 });
@@ -16,7 +16,7 @@ const public_pages = [
   "/auth/change-password",
 ];
 
-devCheck.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response,
 
   async (error) => {
@@ -42,4 +42,4 @@ devCheck.interceptors.response.use(
   },
 );
 
-export default devCheck;
+export default api;
