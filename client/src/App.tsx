@@ -4,7 +4,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
-import Toast from "./components/Toast";
+import Toast from "./components/CustomToast";
 import LandingPage from "./pages/LandingPage";
 import Layout from "./Layout/Layout";
 import Login from "./pages/AuthPage/Login";
@@ -38,7 +38,8 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-     <Toast  />
+
+      <Toaster position="top-right">{(t) => <Toast t={t} />}</Toaster>
     </>
   );
 }
