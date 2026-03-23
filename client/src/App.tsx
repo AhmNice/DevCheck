@@ -4,6 +4,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+import Toast from "./components/Toast";
 import LandingPage from "./pages/LandingPage";
 import Layout from "./Layout/Layout";
 import Login from "./pages/AuthPage/Login";
@@ -15,6 +16,7 @@ import Import from "./pages/Import";
 import Analytics from "./pages/Analytics";
 import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const router = createBrowserRouter(
@@ -36,6 +38,7 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
+     <Toast  />
     </>
   );
 }
