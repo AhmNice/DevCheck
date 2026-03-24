@@ -42,8 +42,8 @@ const statsData: StatsCardProps[] = [
 
 const StatsCard = () => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4  gap-4  justify-between">
-      {statsData.map((stats) => {
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 justify-between">
+      {statsData.map((stats, index) => {
         let tagStyle;
         if (stats.percentage.toString().includes("+")) {
           tagStyle = "bg-green-100 text-green-600";
@@ -52,22 +52,22 @@ const StatsCard = () => {
         }
         const { icon: Icon } = stats;
         return (
-          <div className="p-6 border-1 flex-1 shadow-sm border-gray-400/20 bg-white rounded-xl">
+          <div key={index} className="p-4 flex-1 shadow-sm bg-white rounded-xl">
             <div className="flex justify-between">
-              <div className="space-y-3">
-                <h6 className="font-sans text-md text-blue-950/60 font-semibold">
+              <div className="space-y-2">
+                <h6 className="font-sans text-xs text-blue-950/60 font-semibold uppercase tracking-wide">
                   {stats.title}
                 </h6>
-                <p className="font-bold text-4xl py-2">{stats.value}</p>
-                <p className="text-sm text-blue-950/60">
-                  <span className={`${tagStyle} px-2 py-1 rounded-md mr-3`}>
+                <p className="font-bold text-2xl">{stats.value}</p>
+                <p className="text-xs text-blue-950/60 flex items-center flex-wrap gap-1">
+                  <span className={`${tagStyle} px-1.5 py-0.5 rounded-md text-xs font-medium`}>
                     {stats.percentage}%
                   </span>
-                  {stats.change}
+                  <span className="text-gray-500">{stats.change}</span>
                 </p>
               </div>
               <div>
-                <Icon size={16} />
+                <Icon size={14} className="text-gray-400" />
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "../Layout/DashboardLayout";
 import TaskCard, { type taskProps } from "../components/cards/TaskCard";
 import { Plus } from "lucide-react";
@@ -104,60 +104,137 @@ const taskData: taskProps[] = [
       },
     ],
   },
+  {
+    tag: "MEDIUM PRIORITY",
+    title: "API Rate Limiting",
+    description:
+      "Implement rate limiting for public API endpoints to prevent abuse and ensure fair usage.",
+    percentage: 30,
+    startDate: "Nov 1",
+    endDate: "Nov 15",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Research rate limiting strategies",
+        completed: true,
+      },
+      {
+        id: 2,
+        title: "Implement Redis-based rate limiter",
+        completed: false,
+      },
+    ],
+  },
+  {
+    tag: "LOW PRIORITY",
+    title: "UI Component Library",
+    description:
+      "Create reusable UI components and document them in Storybook.",
+    percentage: 15,
+    startDate: "Nov 5",
+    endDate: "Nov 30",
+    subtaskData: [
+      {
+        id: 1,
+        title: "Set up Storybook",
+        completed: true,
+      },
+      {
+        id: 2,
+        title: "Create Button component",
+        completed: false,
+      },
+      {
+        id: 3,
+        title: "Create Input component",
+        completed: false,
+      },
+    ],
+  },
 ];
 
 const Tasks = () => {
   const [isActive, setIsActive] = useState("all");
-  const [model, setModel] = useState(false);
+  const [modal, setModal] = useState(false);
   const [tasks, setTasks] = useState<taskProps[]>(taskData);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const handleTaskCreate = (newTask: taskProps) => {
-    setTasks((prevTask) => [...prevTask, newTask]);
-  };
+  // Listen for sidebar collapse changes
+  useEffect(() => {
+    const handleSidebarChange = (e: CustomEvent) => {
+      setIsSidebarCollapsed(e.detail);
+    };
+
+    window.addEventListener('sidebarCollapse' as any, handleSidebarChange);
+
+    // Check initial sidebar state
+    const checkSidebarState = () => {
+      const sidebar = document.querySelector('[class*="w-20"]');
+      setIsSidebarCollapsed(!!sidebar);
+    };
+
+    setTimeout(checkSidebarState, 100); // Small delay to ensure DOM is ready
+
+    return () => {
+      window.removeEventListener('sidebarCollapse' as any, handleSidebarChange);
+    };
+  }, []);
+
+  const filterButtons = [
+    { id: "all", label: "All Tasks" },
+    { id: "progress", label: "In Progress" },
+    { id: "review", label: "Review" },
+    { id: "backlog", label: "Backlog" },
+  ];
+
+  function handleTaskCreate(task: taskProps): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <>
-      <DashboardLayout>
-        <div className="relative">
-          <div className="flex flex-col p-4 border-b border-b-gray-400/20">
-            <div className="p-2">
+      <DashboardLayout >
+        <div className="relative h-full">
+          {/* Header Section */}
+          <div className="flex flex-col p-3 border-b border-b-gray-200/60 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+            <div className="py-2">
               <h2 className="text-xl font-bold text-gray-900">Active Tasks</h2>
-              <p className="text-xs text-gray-400 mt-0.5 mb-5">
+              <p className="text-sm text-gray-500 mt-0.5">
                 You have {tasks.length} tasks in progress for this week
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsActive("all")}
-                className={`flex items-center gap-3 px-5 py-2 rounded-full transition-all duration-200 ${isActive === "all" ? "bg-blue-500 text-white" : "bg-white text-gray-700"} `}
-              >
-                All Tasks
-              </button>
-              <button
-                onClick={() => setIsActive("progress")}
-                className={`flex items-center gap-3 px-5 py-2 rounded-full transition-all duration-200 ${isActive === "progress" ? "bg-blue-500 text-white" : "bg-white text-gray-700"} `}
-              >
-                In Progress
-              </button>
-              <button
-                onClick={() => setIsActive("review")}
-                className={`flex items-center gap-3 px-5 py-2 rounded-full transition-all duration-200 ${isActive === "review" ? "bg-blue-500 text-white" : "bg-white text-gray-700"} `}
-              >
-                Review
-              </button>
-              <button
-                onClick={() => setIsActive("backlog")}
-                className={`flex items-center gap-3 px-5 py-2 rounded-full transition-all duration-200 ${isActive === "backlog" ? "bg-blue-500 text-white" : "bg-white text-gray-700"} `}
-              >
-                Backlog
-              </button>
+
+            {/* Filter Buttons */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              {filterButtons.map((button) => (
+                <button
+                  key={button.id}
+                  onClick={() => setIsActive(button.id)}
+                  className={`flex items-center whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                    isActive === button.id
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/60"
+                  }`}
+                >
+                  {button.label}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* Tasks Grid - Dynamic columns based on sidebar state */}
           {isActive === "all" && (
-            <div className="p-8 flex">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {tasks.map((task) => (
+            <div className="p-4">
+              <div
+                className={`grid gap-4 transition-all duration-300 ${
+                  isSidebarCollapsed
+                    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 md:grid-cols-2"
+                }`}
+              >
+                {tasks.map((task, index) => (
                   <TaskCard
+                    key={index}
                     subtaskData={task.subtaskData}
                     tag={task.tag}
                     title={task.title}
@@ -168,22 +245,40 @@ const Tasks = () => {
                   />
                 ))}
               </div>
+
+              {/* Empty State */}
+              {tasks.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="bg-gray-100 rounded-full p-4 mb-3">
+                    <Plus size={24} className="text-gray-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">No tasks yet</h3>
+                  <p className="text-sm text-gray-500 mb-4">Create your first task to get started</p>
+                  <button
+                    onClick={() => setModal(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Create Task
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="flex  p-6 mt-20 cursor-pointer bottom-0 right-0 sticky items-end justify-end">
+          {/* Floating Action Button */}
+          <div className="fixed bottom-6 right-6 z-20">
             <button
-              onClick={() => setModel((prev) => !prev)}
-              className="rounded-full cursor-pointer px-4 font-bold py-4 hover:bg-blue-700  hover:scale-105 bg-blue-500 text-white transition-all delay-150 duration-150"
+              onClick={() => setModal(true)}
+              className="rounded-full cursor-pointer p-3 bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all duration-200"
+              aria-label="Create new task"
             >
-              <Plus size={24} className="font-bold" />
+              <Plus size={20} className="font-bold" />
             </button>
           </div>
 
-          {model && (
-            <div>
-              <CreateTask setModel={setModel} onTaskCreate={handleTaskCreate} />
-            </div>
+          {/* Create Task Modal */}
+          {modal && (
+            <CreateTask setModel={setModal} onTaskCreate={handleTaskCreate} />
           )}
         </div>
       </DashboardLayout>

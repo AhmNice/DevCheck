@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "../../components/LandingPageComponents/Header";
 import { FaArrowRight, FaGithub } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,7 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate("/dashboard");
+    navigate("/dashboard", { state: { formData } });
     console.log(formData);
   };
 
@@ -21,84 +20,99 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen bg-[#f8f9fb]">
-      <Header />
-      <div className="flex items-center justify-center h-[90%]  max-w-full mx-auto">
-        <div className="text-center">
-          <div>
-            <h1 className="text-[#0d121b] mb-2 text-4xl font-semibold xl:text-4xl">
-              Log in to DevCheckList
-            </h1>
-            <p className="mb-4"> Manage your technical tasks with focus</p>
-          </div>
-          <div className="bg-white p-8 rounded-xl border border-gray-400/20 text-left">
-            <form action="" className="space-y-6" onSubmit={handleSubmit}>
-              <div className="flex flex-col">
-                <label
-                  htmlFor="email"
-                  className="font-bold text-sm mb-1 text-black"
-                >
-                  Work Email
-                </label>
-                <input
-                  className="border border-gray-400/20 outline-blue-400/10  rounded-md indent-2 p-2"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="name@company.com"
-                />
-              </div>
-              <div className="flex flex-col pb-2">
-                <label
-                  htmlFor="password"
-                  className="font-bold text-sm mb-1 text-black"
-                >
-                  Password
-                </label>
-                <input
-                  className="border border-gray-400/10 outline-blue-400/10  rounded-md indent-2 p-2"
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-[#135bec] flex items-center gap-2 justify-center w-full py-3.5 px-4  rounded-lg text-white "
+    <div className="min-h-screen bg-[#f8f9fb] flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-[#0d121b] mb-2 text-2xl md:text-3xl font-bold">
+            Log in to DevCheck
+          </h1>
+          <p className="text-sm text-gray-500">
+            Manage your technical tasks with focus
+          </p>
+        </div>
+
+        <div className="bg-white p-6 shadow-lg rounded-xl border border-gray-200/60 text-left">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="flex flex-col space-y-1.5">
+              <label
+                htmlFor="email"
+                className="text-xs font-medium uppercase tracking-wide text-gray-500"
               >
-                Sign In <FaArrowRight />
+                Work Email
+              </label>
+              <input
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50/50"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="name@company.com"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col space-y-1.5">
+              <label
+                htmlFor="password"
+                className="text-xs font-medium uppercase tracking-wide text-gray-500"
+              >
+                Password
+              </label>
+              <input
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-gray-50/50"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot password?
               </button>
+            </div>
 
-              <div className="relative py-2 flex items-center">
-                <div className="flex-grow border-t border-border-dark"></div>
-                <span className="flex-shrink mx-4 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">
-                  Or continue with
-                </span>
-                <div className="flex-grow border-t border-border-dark"></div>
-              </div>
-
-              <div className="flex items-center justify-center gap-2">
-                <button className="bg-white rounded-md flex items-center gap-2 py-2 px-12 border border-neutral-400/20">
-                  <FaGithub /> GitHub
-                </button>
-                <button className="bg-white rounded-md flex items-center gap-2 py-2 px-12 border border-neutral-400/20">
-                  <FcGoogle /> Google
-                </button>
-              </div>
-            </form>
-          </div>
-          <div className="flex  items-center text-center justify-center gap-2 py-6">
-            <p className="text-gray-400">Don't have an account?</p>
-            <span
-              className="text-blue-500 cursor-pointer"
-              onClick={() => navigate("/signup")}
+            <button
+              type="submit"
+              className="bg-[#135bec] flex items-center gap-2 justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-500/20"
             >
-              Create an account
-            </span>
-          </div>
+              Sign In <FaArrowRight size={14} />
+            </button>
+
+            <div className="relative py-2 flex items-center">
+              <div className="flex-grow border-t border-gray-200"></div>
+              <span className="flex-shrink mx-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                Or continue with
+              </span>
+              <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button className="flex-1 w-full bg-white rounded-lg flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                <FaGithub size={18} /> GitHub
+              </button>
+              <button className="flex-1 w-full bg-white rounded-lg flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                <FcGoogle size={18} /> Google
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 py-6">
+          <p className="text-xs text-gray-500">Don't have an account?</p>
+          <span
+            className="text-xs text-blue-600 cursor-pointer font-medium hover:text-blue-700 hover:underline transition-all"
+            onClick={() => navigate("/signup")}
+          >
+            Create an account
+          </span>
         </div>
       </div>
     </div>

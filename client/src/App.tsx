@@ -16,6 +16,7 @@ import Import from "./pages/Import";
 import Analytics from "./pages/Analytics";
 import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
+import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -30,8 +31,9 @@ function App() {
         <Route path="task" element={<Tasks />} />
         <Route path="import" element={<Import />} />
         <Route path="analytics" element={<Analytics />} />
-        <Route path="task-details" element={<TaskDetials />} />
+        <Route path="task/:title/:id" element={<TaskDetials />} />
         <Route path="task-create" element={<CreateTask />} />
+        <Route path="setting" element={<Setting />} />
       </Route>,
     ),
   );
