@@ -2,10 +2,12 @@ import express from "express";
 
 const authRouter = express.Router();
 import {
+  checkAuth,
   githubAuthCallback,
   // githubAuthCallback,
   googleAuthCallback,
   login,
+  logOut,
   register,
   verifyOTP,
 } from "../controllers/auth.controller.js";
@@ -58,4 +60,6 @@ authRouter.get(
 authRouter.get("/google/callback", googleAuthCallback);
 authRouter.get("/github/callback", githubAuthCallback);
 
+authRouter.get("/user/logout", verifySession, logOut);
+authRouter.get("/user/authenticate", verifySession, checkAuth);
 export default authRouter;

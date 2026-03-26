@@ -152,6 +152,7 @@ export const googleAuthCallback = (
     },
   )(req, res, next);
 };
+
 export const githubAuthCallback = (
   req: Request,
   res: Response,
@@ -162,14 +163,11 @@ export const githubAuthCallback = (
     { session: false },
     async (err: undefined, user: UserInterface) => {
       if (err) {
-        return next(err);
+        return res.redirect(`${config.CLIENT_URL}/login?error=oauth_error`);
       }
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "github authentication failed: User not found",
-        });
+        return res.redirect(`${config.CLIENT_URL}/login?error=user_not_found`);
       }
 
       try {
@@ -179,10 +177,14 @@ export const githubAuthCallback = (
           email: user.email,
           role: user.account_role,
         });
+
         await nSession.createSession(res);
-        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
-      } catch (error) {
-        return next(error);
+
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+        );
+      } catch {
+        return res.redirect(`${config.CLIENT_URL}/login?error=server_error`);
       }
     },
   )(req, res, next);
@@ -245,3 +247,28 @@ export const resetPassword = asyncHandler(
     });
   },
 );
+export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const findUser = await User.findById(`${user?.user_id}`);
+  if (!findUser) {
+    throw new BadRequestError("User not found");
+  }
+  return res.status(200).json({
+    success: true,
+    message: "User Authenticated",
+    user: findUser,
+  });
+});
+export const logOut = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  await new Session({
+    user_id: user?.user_id || "",
+    userName: user?.userName || "",
+    email: user?.email || "",
+    role: user?.role || "",
+  }).destroySession(req, res);
+  return res.status(200).json({
+    success: true,
+    message: "User logged out successfully",
+  });
+});

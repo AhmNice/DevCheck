@@ -1,15 +1,30 @@
 import { UserPlus } from "lucide-react";
 import DashboardLayout from "../Layout/DashboardLayout";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "../store/authstore";
 
 const Setting = () => {
   const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuthStore();
+
   const [formData, setFormData] = useState({
-    name: "",
-    jobTitle: "",
-    email: "",
-    biography: "",
+    name: user?.name || "",
+    jobTitle: user?.jobTitle || "",
+    email: user?.email || "",
+    biography: user?.bio || "",
   });
+  useEffect(() => {
+    setFormData({
+      name: user?.name || "",
+      jobTitle: user?.jobTitle || "",
+      email: user?.email || "",
+      biography: user?.bio || "",
+    });
+  }, [user]);
+   const jobTitle = user?.jobTitle?.replace(/_/g, " ")
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ") || "Not specified";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -53,9 +68,9 @@ const Setting = () => {
               <UserPlus size={32} />
             </div>
             <div>
-              <h3 className="font-semibold text-base">Alex Rivera</h3>
+              <h3 className="font-semibold text-base">{user?.name || "user"}</h3>
               <p className="text-xs text-gray-600">
-                Fullstack Developer · San Francisco, CA
+                {jobTitle} 
               </p>
             </div>
           </div>
@@ -77,7 +92,10 @@ const Setting = () => {
             <form onSubmit={handleSave}>
               <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-6">
                 <div className="flex flex-1 flex-col gap-1.5 pb-2 w-full">
-                  <label htmlFor="name" className="text-xs font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="text-xs font-medium text-gray-700"
+                  >
                     Full Name
                   </label>
                   <input
@@ -110,7 +128,10 @@ const Setting = () => {
               </div>
 
               <div className="flex flex-1 flex-col gap-1.5 pb-2 mt-3">
-                <label htmlFor="email" className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Email Address
                 </label>
                 <input
@@ -198,7 +219,9 @@ const Setting = () => {
 
         <div className="bg-white p-5 shadow-sm rounded-lg mt-6">
           <div>
-            <h3 className="font-semibold text-base">Notification Preferences</h3>
+            <h3 className="font-semibold text-base">
+              Notification Preferences
+            </h3>
             <p className="text-xs text-gray-500">
               Decide how you want to be notified about task updates.
             </p>
@@ -206,41 +229,45 @@ const Setting = () => {
           <div className="border-b border-b-gray-400/20 mt-3 mb-3"></div>
 
           <div className="space-y-3">
-  <div className="flex items-center justify-between">
-    <div>
-      <p className="text-sm font-medium">Email Notifications</p>
-      <p className="text-xs text-gray-500">
-        Receive updates via email
-      </p>
-    </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        onChange={(e) => console.log("Email notifications:", e.target.checked)}
-      />
-      <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
-    </label>
-  </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Email Notifications</p>
+                <p className="text-xs text-gray-500">
+                  Receive updates via email
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  onChange={(e) =>
+                    console.log("Email notifications:", e.target.checked)
+                  }
+                />
+                <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
+              </label>
+            </div>
 
-  <div className="flex items-center justify-between">
-    <div>
-      <p className="text-sm font-medium">Push Notifications</p>
-      <p className="text-xs text-gray-500">
-        Receive updates in browser
-      </p>
-    </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        defaultChecked
-        onChange={(e) => console.log("Push notifications:", e.target.checked)}
-      />
-      <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
-    </label>
-  </div>
-</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Push Notifications</p>
+                <p className="text-xs text-gray-500">
+                  Receive updates in browser
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  defaultChecked
+                  onChange={(e) =>
+                    console.log("Push notifications:", e.target.checked)
+                  }
+                />
+                <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-2.5"></div>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

@@ -18,6 +18,8 @@ import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
 import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
+import Protected from "./hooks/Protected";
+import GuestRoute from "./hooks/GuestRoute";
 
 function App() {
   const router = createBrowserRouter(
@@ -25,9 +27,31 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<LandingPage />} />
         <Route path="*" element={<PageNotFound />} />
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<Signup />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route
+          path="auth/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="auth/signup"
+          element={
+            <GuestRoute>
+              <Signup />
+            </GuestRoute>
+          }
+        />
+
+        <Route
+          path="dashboard"
+          element={
+            <Protected requiredRole={"user"}>
+              <Dashboard />
+            </Protected>
+          }
+        />
         <Route path="task" element={<Tasks />} />
         <Route path="import" element={<Import />} />
         <Route path="analytics" element={<Analytics />} />

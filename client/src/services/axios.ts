@@ -14,6 +14,7 @@ const public_pages = [
   "/auth/verify-otp",
   "/auth/reset-password",
   "/auth/change-password",
+  "/user-auth/oauth-callback",
 ];
 
 api.interceptors.response.use(
@@ -28,9 +29,9 @@ api.interceptors.response.use(
     if (status === 401) {
       if (!public_pages.includes(currentPath)) {
         toastError(message || "Session expired. Please log in again.");
+        window.location.href = "/auth/login";
       }
-      // redirect safely
-      window.location.href = "/auth/login";
+
       return Promise.reject(error);
     }
     if (status === 403) {
