@@ -19,6 +19,7 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { APP_VERSION } from "../util/version";
+import { useAuthStore } from "../store/authstore";
 
 interface SidebarItem {
   icon: React.ElementType;
@@ -75,6 +76,7 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, logOut: logoutUser } = useAuthStore();
 
   useEffect(() => {
     onCollapseChange?.(isCollapsed);
@@ -107,7 +109,13 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
   const toggleSubmenu = (text: string) => {
     setOpenSubmenu(openSubmenu === text ? null : text);
   };
-
+  const handleLogOut = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   const renderMenuItem = (item: SidebarItem, index: number) => {
     const Icon = item.icon;
     const hasChildren = item.children && item.children.length > 0;
@@ -393,7 +401,12 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
                       Product Manager
                     </p>
                   </div>
-                  <button className="p-2 hover:bg-white rounded-lg transition-colors group flex-shrink-0">
+                  <button
+                    onClick={() => {
+                      handleLogOut();
+                    }}
+                    className="p-2 hover:bg-white rounded-lg transition-colors group flex-shrink-0"
+                  >
                     <LogOut className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
                   </button>
                 </>

@@ -55,6 +55,8 @@ export const createTables = async () => {
         account_role VARCHAR(50) NOT NULL CHECK (account_role IN ('user','admin')),
         otp VARCHAR(10),
         otp_expiry TIMESTAMP,
+        jobTitle VARCHAR(255),
+        account_type VARCHAR(50) CHECK (account_type IN ('pro','free_tier')) DEFAULT 'free_tier',
         is_verified BOOLEAN DEFAULT FALSE,
         resetPassword_token VARCHAR(255),
         resetPassword_token_expiry TIMESTAMP,
@@ -83,7 +85,7 @@ export const createTables = async () => {
         IF NOT EXISTS (
           SELECT 1 FROM pg_type WHERE typname = 'task_status'
         ) THEN
-          CREATE TYPE task_status AS ENUM ('pending','in_progress','completed');
+          CREATE TYPE task_status AS ENUM ('pending','in_progress','completed', 'overdue');
         END IF;
       END
       $$;
@@ -126,7 +128,7 @@ export const createTables = async () => {
         title VARCHAR(225) NOT NULL,
         description VARCHAR(500),
         due_date TIMESTAMP NOT NULL,
-        status task_status DEFAULT 'pending',
+        status task_status NOT NULL CHECK (status IN ('pending','in_progress','completed')) DEFAULT 'pending' ,
         source VARCHAR(50),
         source_id VARCHAR(255),
         total_subtasks INT DEFAULT 0,

@@ -169,4 +169,117 @@ export class Task {
       );
     }
   }
+  static async summaryByUserId({
+    client,
+    user_id,
+  }: {
+    client: Pool | PoolClient;
+    user_id: string;
+  }) {
+    const query = `
+     SELECT
+        CASE
+          WHEN status != 'completed' AND due_date < NOW() THEN 'overdue'
+          ELSE status
+        END AS status_group,
+        COUNT(*) AS count
+      FROM core.tasks
+      WHERE user_id = $1
+      GROUP BY status_group;
+    `;
+    try {
+      const result = await client.query(query, [user_id]);
+      return result.rows;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error retrieving task summary: " + (error as Error).message,
+      );
+    }
+  }
+  static async summaryByProjectId({
+    client,
+    project_id,
+  }: {
+    client: Pool | PoolClient;
+    project_id: string;
+  }) {
+    const query = `
+      SELECT
+        status,
+        COUNT(*) AS count
+      FROM core.tasks
+      WHERE project_id = $1
+      GROUP BY status;
+    `;
+    try {
+      const result = await client.query(query, [project_id]);
+      return result.rows;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error retrieving task summary: " + (error as Error).message,
+      );
+    }
+  }
+  static async weeklySummaryByUserId({
+    client,
+    user_id,
+  }: {
+    client: Pool | PoolClient;
+    user_id: string;
+  }) {
+    const query = `
+      SELECT
+        DATE_TRUNC('week', due_date) AS week_start,
+        CASE
+          WHEN status != 'completed' AND due_date < NOW() THEN 'overdue'
+          ELSE status
+        END AS status_group,
+        COUNT(*) AS count
+      FROM core.tasks
+      WHERE user_id = $1
+        AND due_date >= NOW() - INTERVAL '4 weeks'
+      GROUP BY week_start, status_group
+      ORDER BY week_start DESC;
+    `;
+    try {
+      const result = await client.query(query, [user_id]);
+      return result.rows;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error retrieving weekly task summary: " + (error as Error).message,
+      );
+    }
+  }
+  static async currentWeekProgressByUserId({
+    client,
+    user_id,
+  }: {
+    client: Pool | PoolClient;
+    user_id: string;
+  }) {
+    const query = `
+    SELECT
+      days.day,
+      TO_CHAR(days.day, 'Dy') AS day_name,
+      COALESCE(COUNT(t._id), 0) AS task_count
+    FROM generate_series(
+      DATE_TRUNC('week', NOW()),
+      DATE_TRUNC('week', NOW()) + INTERVAL '6 days',
+      INTERVAL '1 day'
+    ) AS days(day)
+    LEFT JOIN core.tasks t
+      ON DATE_TRUNC('day', t.due_date) = days.day
+      AND t.user_id = $1
+    GROUP BY days.day
+    ORDER BY days.day;
+    `;
+    try {
+      const result = await client.query(query, [user_id]);
+      return result.rows;
+    } catch (error) {
+      throw new BadRequestError(
+        "Error retrieving current week progress: " + (error as Error).message,
+      );
+    }
+  }
 }

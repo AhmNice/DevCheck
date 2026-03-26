@@ -3,12 +3,14 @@ import Sidebar from "../components/Sidebar";
 import type { PropsWithChildren } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useAuthStore } from "../store/authstore";
 
 type DashboardLayoutProps = PropsWithChildren;
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Generate breadcrumbs based on current path
@@ -41,7 +43,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         .replace(/^\d+/, "")
         .replace(/[^a-zA-Z0-9\s]/g, "")
         .replace(/\s+/g, " ")
-        .trim(); // Remove leading numbers and special characters
+        .trim();
     };
 
     const main = formatSegment(segments[0]);
@@ -51,7 +53,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   const breadcrumbs = getBreadcrumbs();
-
+  const account_type =
+  user?.account_type
+    ?.replace(/_/g, " ")
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ") || "Free Tier";
+    const jobTitle = user?.jobTitle?.replace(/_/g, " ")
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ") || "Not specified";
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
       <Sidebar onCollapseChange={setIsSidebarCollapsed} />
@@ -76,16 +87,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </button>
 
               <div>
-                <h3 className="font-semibold text-gray-800">
-                  Welcome back, Maxy
+                <h3 className="font-semibold text-gray-800 w-60 text-wrap truncate">
+                  Welcome back, {user?.name || "user"}
                 </h3>
                 <p className="text-xs text-gray-500 md:hidden">
-                  Product Manager
+                  {jobTitle}
                 </p>
               </div>
 
-              <span className="hidden md:inline-block px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full border border-blue-100">
-                Pro Account
+              <span className="hidden md:inline-block px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-full border border-blue-100">
+                {account_type}
               </span>
             </div>
 
@@ -114,9 +125,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="hidden md:flex items-center gap-2 ml-2 border-l border-gray-200 pl-4">
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-700">
-                    Alex Rivea
+                    {user?.name || "user"}
                   </p>
-                  <p className="text-xs text-gray-500">Product Manager</p>
+                  <p className="text-xs text-gray-500">{jobTitle}</p>
                 </div>
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold">
                   AR
