@@ -95,9 +95,12 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button className="flex-1 w-full bg-white rounded-lg flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+              <div
+                onClick={() => navigate("/gitConnection")}
+                className="flex-1 w-full bg-white rounded-lg flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+              >
                 <FaGithub size={18} /> GitHub
-              </button>
+              </div>
               <button className="flex-1 w-full bg-white rounded-lg flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
                 <FcGoogle size={18} /> Google
               </button>
