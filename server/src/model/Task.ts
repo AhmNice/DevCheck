@@ -2,7 +2,7 @@ import { pool } from "../config/db.config.js";
 import { TaskInterface } from "../interface/task.interface.js";
 import { BadRequestError } from "../utils/errorHandler.js";
 import { Pool, PoolClient } from "pg";
-
+import format from "pg-format";
 type taskInterface = Pick<
   TaskInterface,
   | "title"
@@ -57,6 +57,31 @@ export class Task {
       throw new Error("Error saving task: " + (error as Error).message);
     }
   }
+  static async insertMany(tasks: Task[], client: Pool | PoolClient = pool) {
+    try {
+      const values: unknown[] = tasks.map((task) => [
+        task.user_id,
+        task.project_id ? task.project_id : null,
+        task.title,
+        task.description,
+        task.due_date,
+        task.status,
+        task.priority,
+        task.source ? task.source : null,
+        task.source_id ? task.source_id : null,
+      ]);
+      console.log(values);
+      const query = format(
+        `INSERT INTO core.tasks (user_id, project_id, title, description, due_date, status, priority, source, source_id) VALUES %L RETURNING *`,
+        values,
+      );
+      const result = await client.query(query);
+      console.log("Insert query result:", result);
+      return result.rows;
+    } catch (error) {
+      throw new Error("Error saving tasks: " + (error as Error).message);
+    }
+  }
 
   static async findById(client: Pool | PoolClient = pool, id: string) {
     try {
@@ -71,7 +96,16 @@ export class Task {
   }
   static async getTaskByUserId(user_id: string) {
     try {
-      const query = `SELECT * FROM core.tasks WHERE user_id = $1`;
+      const query = `SELECT t.*,
+      u.name AS created_by,
+      COUNT (s._id) FILTER (WHERE s.status = 'completed') AS
+      completed_subtasks
+      FROM core.tasks t
+      LEFT JOIN core.subtasks s ON t._id = s.task_id
+      LEFT JOIN core.users u ON t.user_id = u._id
+      WHERE user_id = $1
+      GROUP BY t._id, u.name
+      ORDER BY t.created_at DESC`;
       const result = await pool.query(query, [user_id]);
       return result.rows;
     } catch (error) {
@@ -94,6 +128,7 @@ export class Task {
     const query = `
         SELECT
       t.*,
+      u.name AS created_by,
       COALESCE(
         json_agg(
           json_build_object(
@@ -109,8 +144,10 @@ export class Task {
     FROM core.tasks t
     LEFT JOIN core.subtasks s
       ON t._id = s.task_id
+    LEFT JOIN core.users u
+      ON t.user_id = u._id
     WHERE t._id = $1
-    GROUP BY t._id;
+    GROUP BY t._id, u.name;
       `;
     try {
       const result = await pool.query(query, [task_id]);

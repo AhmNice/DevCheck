@@ -19,6 +19,7 @@ export const ProjectSchema = z
         if (taskDue > new Date(data.deadline!)) return false;
 
         return task.subtasks.every((sub) => {
+          if (!sub.due_date) return true;
           const subDue = new Date(sub.due_date);
           return subDue <= new Date(data.deadline!);
         });

@@ -7,9 +7,11 @@ import { User } from "../model/User.js";
 import { pool } from "../config/db.config.js";
 import { TaskInterface } from "../interface/task.interface.js";
 import { Project } from "../model/Project.js";
+import { TaskSchema } from "../schema/task_schema.js";
 
 const client = await pool.connect();
 export const createTask = asyncHandler(async (req: Request, res: Response) => {
+  const validatedData = TaskSchema.parse(req.body);
   const {
     user_id,
     title,
@@ -20,9 +22,7 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
     project_id,
   } = req.body;
   if (!title || !due_date || !user_id) {
-    throw new BadRequestError(
-      "Missing required fields: title, due_date, user_id, status, priority",
-    );
+    throw new BadRequestError("Missing required fields");
   }
   const user = await User.findById(user_id);
   if (!user) {
@@ -32,6 +32,7 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
   if (isNaN(parsedDate.getTime())) {
     throw new BadRequestError("Invalid due_date format");
   }
+
   let project = null;
   if (project_id) {
     project = await Project.findById(`${project_id}`);
@@ -39,18 +40,48 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
       throw new BadRequestError("Project not found");
     }
   }
-  const client = await pool.connect();
-  const task = new Task({
-    user_id,
-    title,
-    description,
-    due_date: parsedDate,
-    status: status || "pending",
-    priority: priority || "normal",
-    project_id: project_id || null,
-  });
-
-  const savedTask = await task.save(client);
+  let savedTask: TaskInterface;
+  try {
+    const client = await pool.connect();
+    client.query("BEGIN");
+    const task = new Task({
+      user_id,
+      title,
+      description,
+      due_date: parsedDate,
+      status: status || "pending",
+      priority: priority || "normal",
+      project_id: project_id || null,
+    });
+    savedTask = await task.save(client);
+    if (validatedData.subtasks && validatedData.subtasks.length > 0) {
+      const subtaskToSave = validatedData.subtasks
+        .map(
+          (sub) =>
+            new SubTask({
+              task_id: savedTask._id,
+              title: sub.title,
+              description: sub.description,
+              due_date: sub.due_date
+                ? new Date(sub.due_date)
+                : new Date(
+                    new Date(due_date).getTime() + 7 * 24 * 60 * 60 * 1000,
+                  ),
+              status: sub.status || "pending",
+            }),
+        )
+        .filter((item): item is SubTask => item !== undefined);
+      await SubTask.insertMany(subtaskToSave, client);
+    }
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw new BadRequestError(
+      "Error creating task: " + (error as Error).message,
+    );
+  } finally {
+    client.release();
+  }
   return res.status(201).json({
     success: true,
     message: "Task created successfully",

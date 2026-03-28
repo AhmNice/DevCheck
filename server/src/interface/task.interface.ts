@@ -1,7 +1,7 @@
 export interface TaskInterface {
   _id: string;
   user_id: string;
-  project_id?: string;
+  project_id?: string | null;
   title: string;
   description?: string;
   source?: string;

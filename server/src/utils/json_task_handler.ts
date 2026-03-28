@@ -40,34 +40,44 @@ export const jsonTaskHandler = asyncHandler(
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-
-      for (const taskData of validatedTasks) {
-        const task = new Task({
-          title: taskData.title,
-          user_id: user_id,
-          description: taskData.description,
-          due_date: new Date(taskData.due_date),
-          status: taskData.status,
-          priority: taskData.priority,
-        });
-
-        const savedTask = await task.save(client);
-
-        if (taskData.subtasks?.length) {
-          for (const subtaskData of taskData.subtasks) {
-            const subtask = new SubTask({
-              task_id: savedTask._id,
-              title: subtaskData.title,
-              description: subtaskData.description,
-              due_date: new Date(subtaskData.due_date),
-              status: subtaskData.status,
-            });
-
-            await subtask.save(client);
-          }
-        }
+      console.log("Validated tasks:", validatedTasks);
+      const tasksToSave = validatedTasks.map(
+        (task) =>
+          new Task({
+            user_id: user_id,
+            project_id: task.project_id || null,
+            title: task.title,
+            description: task.description,
+            due_date: new Date(task.due_date),
+            status: task.status || "pending",
+            priority: task.priority,
+          }),
+      );
+      const savedTasks = await Task.insertMany(tasksToSave, client);
+      console.log("Saved tasks:", savedTasks);
+      if (savedTasks.length === 0) {
+        throw new BadRequestError("No valid tasks to import");
       }
-
+      const subTasksToSave: SubTask[] = validatedTasks
+        .map((task) =>
+          task?.subtasks?.map(
+            (sub) =>
+              new SubTask({
+                task_id:
+                  savedTasks.find((t) => t.title === task.title)?._id || "",
+                title: sub.title,
+                description: sub.description,
+                due_date: sub.due_date
+                  ? new Date(sub.due_date)
+                  : new Date(Date.now() + 7),
+                status: sub.status || "pending",
+              }),
+          ),
+        )
+        .flat()
+        .filter((item): item is SubTask => item !== undefined);
+      console.log("Subtasks to save:", subTasksToSave);
+      await SubTask.insertMany(subTasksToSave, client);
       await client.query("COMMIT");
 
       res.status(200).json({
@@ -76,6 +86,7 @@ export const jsonTaskHandler = asyncHandler(
       });
     } catch (error) {
       await client.query("ROLLBACK");
+      console.log("Error importing tasks:", error as Error);
       throw error;
     } finally {
       client.release();
@@ -123,7 +134,9 @@ export const jsonProjectHandler = asyncHandler(
           title: taskData.title,
           user_id: user_id,
           description: taskData.description,
-          due_date: new Date(taskData.due_date),
+          due_date: taskData.due_date
+            ? new Date(taskData.due_date)
+            : new Date(Date.now() + 7),
           status: taskData.status,
           priority: taskData.priority,
           project_id: savedProject._id,
@@ -137,7 +150,9 @@ export const jsonProjectHandler = asyncHandler(
               task_id: savedTask._id,
               title: subtaskData.title,
               description: subtaskData.description,
-              due_date: new Date(subtaskData.due_date),
+              due_date: subtaskData.due_date
+                ? new Date(subtaskData.due_date)
+                : new Date(Date.now() + 7),
               status: subtaskData.status,
             });
 

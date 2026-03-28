@@ -201,13 +201,46 @@ const Signup = () => {
     if (oauthLoading.google) return;
 
     setOauthLoading((prev) => ({ ...prev, google: true }));
-    try {
-      window.location.href = `${API_URL}/auth/google-auth`;
-    } catch (error) {
-      console.error("Google signup error:", error);
-      toast.error("Failed to connect to Google");
-      setOauthLoading((prev) => ({ ...prev, google: false }));
+   const width = 600;
+  const height = 700;
+  const left = window.screen.width / 2 - width / 2;
+  const top = window.screen.height / 2 - height / 2;
+
+  const authWindow = window.open(
+    `${API_URL}/auth/google-auth`,
+    "Google Login",
+    `width=${width},height=${height},top=${top},left=${left}`
+  );
+  if (!authWindow) {
+    console.error("Failed to open popup");
+    setOauthLoading((prev) => ({ ...prev, google: false }));
+    return;
+  }
+
+  const cleanup = () => {
+    setOauthLoading((prev) => ({ ...prev, google: false }));
+    clearInterval(popupCheckInterval);
+    window.removeEventListener("message", handleMessage);
+  };
+
+  const handleMessage = (event: MessageEvent) => {
+    if (event.origin !== window.location.origin) return;
+    const { success, token, userId } = event.data;
+    console.log("Message from popup:", event.data);
+    if (success) {
+      notify.success("Logged in with Google successfully!");
+      window.location.href = "/dashboard";
     }
+    cleanup();
+  }
+  window.addEventListener("message", handleMessage);
+
+  const popupCheckInterval = setInterval(() => {
+    if (authWindow.closed) {
+      console.log("Popup closed by user");
+      cleanup();
+    }
+  }, 500);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,10 +262,10 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-[#0d121b] mb-2 text-2xl md:text-3xl font-bold">
+          <h1 className="text-gray-900 mb-2 text-2xl md:text-3xl font-bold">
             Create an account
           </h1>
           <p className="text-sm text-gray-500">

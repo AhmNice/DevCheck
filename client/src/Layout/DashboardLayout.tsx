@@ -129,12 +129,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </p>
                   <p className="text-xs text-gray-500">{jobTitle}</p>
                 </div>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold">
+                <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold">
                   AR
                 </div>
               </div>
 
-              <div className="md:hidden w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold">
+              <div className="md:hidden w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-semibold">
                 AR
               </div>
             </div>

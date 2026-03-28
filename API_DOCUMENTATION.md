@@ -290,7 +290,7 @@ Upload a JSON file containing project data.
 
 ## 1. Create Task
 
-**POST** `/task/create`
+**POST** `/tasks/create`
 
 ```json
 {

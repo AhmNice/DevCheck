@@ -9,6 +9,7 @@ const api = axios.create({
 const public_pages = [
   "/",
   "/auth/login",
+  "/auth/success",
   "/auth/register",
   "/auth/forgot-password",
   "/auth/verify-otp",

@@ -55,7 +55,7 @@ const StatsCard = () => {
           <div key={index} className="p-4 flex-1 shadow-sm bg-white rounded-xl">
             <div className="flex justify-between">
               <div className="space-y-2">
-                <h6 className="font-sans text-xs text-blue-950/60 font-semibold uppercase tracking-wide">
+                <h6 className="font-sans text-xs text-blue-400 font-semibold uppercase tracking-wide">
                   {stats.title}
                 </h6>
                 <p className="font-bold text-2xl">{stats.value}</p>

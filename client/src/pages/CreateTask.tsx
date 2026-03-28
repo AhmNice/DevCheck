@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { CalendarFold, CheckCircle, X } from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { subtaskData } from "../components/data/subtaskData";
+import MDEditor from "@uiw/react-md-editor";
 import SubtaskCard from "../components/cards/SubtaskCard";
 import type { taskProps } from "../components/cards/TaskCard";
+import type { Subtask, Task } from "../interface/task";
+import { useTaskStore } from "../store/taskStore";
+import { useAuthStore } from "../store/authstore";
+
 
 interface createTaskProps {
   setModel: (model: boolean) => void;
@@ -15,23 +19,25 @@ type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 interface subTask {
-  id: number;
+  _id: string;
+  task_id: string;
   title: string;
   completed: boolean;
 }
 
 const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
-  const [subtasks, setSubtasks] = useState<subTask[]>(subtaskData);
+  const [subtasks, setSubtasks] = useState<Partial<Subtask>[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
   const [date, setDate] = useState<Value>(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
-
+  const { createTask } = useTaskStore();
   // Form state
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const { user } = useAuthStore();
 
   const addSubtask = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && newSubtask.trim()) {
@@ -39,27 +45,31 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
       setSubtasks([
         ...subtasks,
         {
-          id: Date.now(),
+          _id: `${Date.now()}`,
+          task_id: "",
           title: newSubtask.trim(),
-          completed: false,
+          status: "pending",
         },
       ]);
       setNewSubtask("");
     }
   };
 
-  const toggleSubtask = (id: number) => {
+  const toggleSubtask = (id: string) => {
     setSubtasks(
       subtasks.map((subtask) =>
-        subtask.id === id
-          ? { ...subtask, completed: !subtask.completed }
+        subtask._id === id
+          ? {
+              ...subtask,
+              status: subtask.status === "completed" ? "pending" : "completed",
+            }
           : subtask,
       ),
     );
   };
 
-  const deleteSubtask = (id: number) => {
-    setSubtasks(subtasks.filter((subtask) => subtask.id !== id));
+  const deleteSubtask = (id: string) => {
+    setSubtasks(subtasks.filter((subtask) => subtask._id !== id));
   };
 
   const formatDate = (date: Date) => {
@@ -129,37 +139,46 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
 
     try {
       // Calculate completion percentage from subtasks
-      const completedCount = subtasks.filter((s) => s.completed).length;
+      const completedCount = subtasks.filter((s) => s.status).length;
       const percentage =
         subtasks.length > 0
           ? Math.round((completedCount / subtasks.length) * 100)
           : 0;
 
-      const newTask: taskProps = {
-        id: Date.now(),
-        tag: getPriorityTag(priority),
+      const newTask: Partial<Task> = {
+        _id: `${Date.now()}`,
+        priority: (priority === "urgent" ? "high" : priority) as
+          | "low"
+          | "normal"
+          | "high",
         title: taskTitle.trim(),
         description: taskDescription.trim() || undefined,
-        percentage: percentage,
-        startDate: formatDateForTask(new Date()), // Today as start date
-        endDate:
+        created_at: formatDateForTask(new Date()), // Today as start date
+        due_date:
           date instanceof Date
             ? formatDateForTask(date)
             : formatDateForTask(new Date()),
-        subtaskData: subtasks,
+        subtasks: subtasks as Subtask[],
       };
-
+      console.log(newTask.status)
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Log the task (in real app, send to API)
-      console.log("Task created:", newTask);
-
-      // Call the parent callback if provided
-      if (onTaskCreate) {
-        onTaskCreate(newTask);
+      try {
+      const isoDate = date instanceof Date ? date.toISOString() : new Date().toISOString();
+      const newTaskWithISODate = {
+        ...newTask,
+        user_id: user?._id,
+        status: 'pending',
+        due_date: isoDate,
+      };
+      const res = await createTask(newTaskWithISODate as Omit<Task, "_id" | "created_at" | "updated_at">);
+      if(!res.success){
+        setModel(true);
+        return;
       }
-
+      setModel(false);
+    } catch (error) {
+      console.error("Error creating task:", error);
+    }
       // Close modal
       setModel(false);
     } catch (error) {
@@ -224,7 +243,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
               autoFocus
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="w-full text-base font-medium border-0 focus:ring-0 bg-transparent p-0 placeholder:text-gray-300 text-gray-900"
+              className="w-full text-base font-medium outline-none border-0 focus:ring-0 bg-transparent p-0 placeholder:text-gray-300 text-gray-900"
               placeholder="e.g., Implement OAuth2 flow"
               type="text"
               disabled={isSaving}
@@ -302,32 +321,35 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           </div>
 
           {/* Description Field */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 "data-color-mode="light">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center justify-between">
               Description
               <span className="text-[10px] normal-case bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
                 Markdown Supported
               </span>
             </label>
-            <textarea
+           <MDEditor
               value={taskDescription}
-              onChange={(e) => setTaskDescription(e.target.value)}
-              className="w-full min-h-[100px] rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none placeholder:text-gray-400 disabled:opacity-50"
-              placeholder="Add more details about the technical implementation..."
-              disabled={isSaving}
+              onChange={(value: string | undefined) => setTaskDescription(value || "")}
+              height={100}
+              preview="edit"
+              textareaProps={{
+                placeholder: "Add a description to your task...",
+                disabled: isSaving,
+              }}
             />
           </div>
 
           {/* Subtasks Section */}
           <div className="space-y-3">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Subtasks ({subtasks.filter(s => !s.completed).length} remaining)
+              Subtasks ({subtasks.filter((s) => s.status !== "completed").length} remaining)
             </label>
             <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
               {/* Subtask Items */}
               {subtasks.map((subtask) => (
                 <SubtaskCard
-                  key={subtask.id}
+                  key={subtask._id}
                   todo={subtask}
                   onCompletedChange={toggleSubtask}
                   handleDelete={deleteSubtask}
@@ -342,7 +364,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
                   value={newSubtask}
                   onChange={(e) => setNewSubtask(e.target.value)}
                   onKeyDown={addSubtask}
-                  className="flex-1 bg-transparent border-0 focus:ring-0 p-0 text-sm placeholder:text-gray-400 italic text-gray-900 disabled:opacity-50"
+                  className="flex-1 bg-transparent outline-none border-0 focus:ring-0 p-0 text-sm placeholder:text-gray-400 italic text-gray-900 disabled:opacity-50"
                   placeholder="Add a step and press Enter..."
                   disabled={isSaving}
                 />

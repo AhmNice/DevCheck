@@ -20,6 +20,7 @@ import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
 import Protected from "./hooks/Protected";
 import GuestRoute from "./hooks/GuestRoute";
+import AuthSuccess from "./pages/AuthPage/AuthSuccess";
 
 function App() {
   const router = createBrowserRouter(
@@ -43,6 +44,7 @@ function App() {
             </GuestRoute>
           }
         />
+        <Route path="auth/success" element={<AuthSuccess/>}/>
 
         <Route
           path="dashboard"
@@ -52,12 +54,47 @@ function App() {
             </Protected>
           }
         />
-        <Route path="task" element={<Tasks />} />
-        <Route path="import" element={<Import />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="task/:title/:id" element={<TaskDetials />} />
-        <Route path="task-create" element={<CreateTask />} />
-        <Route path="setting" element={<Setting />} />
+        <Route
+          path="task"
+          element={
+            <Protected>
+              <Tasks />
+            </Protected>
+          }
+        />
+        <Route
+          path="import"
+          element={
+            <Protected>
+              <Import />
+            </Protected>
+          }
+        />
+        <Route
+          path="analytics"
+          element={
+            <Protected>
+              <Analytics />
+            </Protected>
+          }
+        />
+        <Route
+          path="task/:title/:id"
+          element={
+            <Protected>
+              <TaskDetials />
+            </Protected>
+          }
+        />
+
+        <Route
+          path="setting"
+          element={
+            <Protected>
+              <Setting />
+            </Protected>
+          }
+        />
       </Route>,
     ),
   );

@@ -126,7 +126,7 @@ export const createTables = async () => {
         user_id UUID NOT NULL REFERENCES core.users(_id) ON DELETE CASCADE,
         project_id UUID REFERENCES core.projects(_id) ON DELETE CASCADE,
         title VARCHAR(225) NOT NULL,
-        description VARCHAR(500),
+        description TEXT,
         due_date TIMESTAMP NOT NULL,
         status task_status NOT NULL CHECK (status IN ('pending','in_progress','completed')) DEFAULT 'pending' ,
         source VARCHAR(50),
