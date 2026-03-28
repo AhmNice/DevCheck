@@ -18,6 +18,8 @@ import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
 import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
+import ConnectionFailed from "./pages/AuthPage/ConnectionFailed";
+import GitConnectionProgress from "./pages/AuthPage/GitConnectionProgress";
 
 function App() {
   const router = createBrowserRouter(
@@ -34,6 +36,8 @@ function App() {
         <Route path="task/:title/:id" element={<TaskDetials />} />
         <Route path="task-create" element={<CreateTask />} />
         <Route path="setting" element={<Setting />} />
+        <Route path="connectionFailed" element={<ConnectionFailed />} />
+        <Route path="gitConnection" element={<GitConnectionProgress />} />
       </Route>,
     ),
   );
