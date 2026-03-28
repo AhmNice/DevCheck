@@ -18,6 +18,9 @@ import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
 import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
+import Protected from "./hooks/Protected";
+import GuestRoute from "./hooks/GuestRoute";
+import AuthSuccess from "./pages/AuthPage/AuthSuccess";
 import ConnectionFailed from "./pages/AuthPage/ConnectionFailed";
 import GitConnectionProgress from "./pages/AuthPage/GitConnectionProgress";
 
@@ -27,17 +30,79 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<LandingPage />} />
         <Route path="*" element={<PageNotFound />} />
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<Signup />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="task" element={<Tasks />} />
-        <Route path="import" element={<Import />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="task/:title/:id" element={<TaskDetials />} />
-        <Route path="task-create" element={<CreateTask />} />
-        <Route path="setting" element={<Setting />} />
-        <Route path="connectionFailed" element={<ConnectionFailed />} />
-        <Route path="gitConnection" element={<GitConnectionProgress />} />
+        <Route
+          path="auth/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="auth/signup"
+          element={
+            <GuestRoute>
+              <Signup />
+            </GuestRoute>
+          }
+        />
+        <Route path="auth/success" element={<AuthSuccess />} />
+
+        <Route
+          path="dashboard"
+          element={
+            <Protected requiredRole={"user"}>
+              <Dashboard />
+            </Protected>
+          }
+        />
+        <Route
+          path="task"
+          element={
+            <Protected>
+              <Tasks />
+            </Protected>
+          }
+        />
+        <Route
+          path="import"
+          element={
+            <Protected>
+              <Import />
+            </Protected>
+          }
+        />
+        <Route
+          path="analytics"
+          element={
+            <Protected>
+              <Analytics />
+            </Protected>
+          }
+        />
+        <Route
+          path="task/:title/:id"
+          element={
+            <Protected>
+              <TaskDetials />
+            </Protected>
+          }
+        />
+
+        <Route
+          path="setting"
+          element={
+            <Protected>
+              <Setting />
+            </Protected>
+          }
+        />
+
+        <Route
+          path="/auth/git-connection-progress"
+          element={<GitConnectionProgress />}
+        />
+        <Route path="/auth/connection-failed" element={<ConnectionFailed />} />
       </Route>,
     ),
   );

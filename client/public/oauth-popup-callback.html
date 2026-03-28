@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OAuth Callback</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f2f7fc;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div>Logging you in...</div>
+
+  <script>
+    // Parse URL query parameters
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userId = params.get("userId");
+
+    if (window.opener) {
+      // Send data back to parent window
+      window.opener.postMessage(
+        { success: true, token, userId },
+        window.location.origin
+      );
+
+      // Close the popup after a short delay
+      setTimeout(() => {
+        window.close();
+      }, 100);
+    } else {
+      // Fallback if opened directly
+      console.warn("No parent window found. Redirecting to homepage...");
+      window.location.href = "/";
+    }
+  </script>
+</body>
+</html>

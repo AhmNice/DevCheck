@@ -166,4 +166,21 @@ export class Session {
       }
     }
   }
+  private async deleteSession(refreshToken: string): Promise<void> {
+    try {
+      await pool.query(`DELETE FROM session.tokens WHERE refresh_token = $1`, [
+        refreshToken,
+      ]);
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  }
+  async destroySession(req: Request, res: Response): Promise<void> {
+    const refreshToken = req.cookies[`${config.SESSION_COOKIE_NAME_REFRESH}`];
+    if (refreshToken) {
+      await this.deleteSession(refreshToken);
+    }
+    res.clearCookie(`${config.SESSION_COOKIE_NAME_ACCESS}`);
+    res.clearCookie(`${config.SESSION_COOKIE_NAME_REFRESH}`);
+  }
 }

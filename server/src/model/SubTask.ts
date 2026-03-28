@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../config/db.config.js";
 import { SubtaskInterface } from "../interface/task.interface.js";
-
+import format from "pg-format";
 type subInterface = Pick<
   SubtaskInterface,
   "task_id" | "title" | "description" | "due_date" | "status"
@@ -53,6 +53,28 @@ export class SubTask {
       return result.rows[0];
     } catch (error) {
       throw new Error("Error saving subtask: " + (error as Error).message);
+    }
+  }
+  static async insertMany(
+    subtasks: SubTask[],
+    client: Pool | PoolClient = pool,
+  ) {
+    try {
+      const values: unknown[] = subtasks.map((sub) => [
+        sub.task_id,
+        sub.title,
+        sub.description,
+        sub.due_date,
+        (sub.status = sub.status || "pending"),
+      ]);
+      const query = format(
+        `INSERT INTO core.subtasks (task_id, title, description, due_date, status) VALUES %L`,
+        values,
+      );
+      const result = await client.query(query);
+      return result.rows;
+    } catch (error) {
+      throw new Error("Error saving subtasks: " + (error as Error).message);
     }
   }
   static async getByTaskId(client: Pool | PoolClient = pool, task_id: string) {
