@@ -8,6 +8,7 @@ app.use(
     origin: `${config.CLIENT_URL}`,
     methods: "GET,POST,PUT,DELETE , PATCH",
     allowedHeaders: "Content-Type,Authorization",
+    credentials: true,
   }),
 );
 app.use(express.json());

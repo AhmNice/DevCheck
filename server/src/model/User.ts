@@ -204,6 +204,7 @@ export class User implements UserType {
       otp_expiry: _otp_expiry,
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
+      github_access_token: _token,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;
@@ -229,6 +230,7 @@ export class User implements UserType {
       otp_expiry: _otp_expiry,
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
+      github_access_token: _token,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;
@@ -253,6 +255,7 @@ export class User implements UserType {
       otp_expiry: _otp_expiry,
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
+      github_access_token: _token,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;
@@ -277,6 +280,7 @@ export class User implements UserType {
       otp_expiry: _otp_expiry,
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
+      github_access_token: _token,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;

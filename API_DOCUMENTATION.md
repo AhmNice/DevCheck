@@ -204,7 +204,16 @@ Connect a GitHub account to an existing user.
   "email": "string"
 }
 ```
+## 7. Get Authenticated User
 
+**GET** `/auth/user/authenticate`
+```json
+  {
+    "success":boolean,
+    "message":string,
+    "user?": userObject
+  }
+```
 ### Reset Password
 
 **POST** `/auth/reset-password?token=...`
@@ -281,7 +290,7 @@ Upload a JSON file containing project data.
 
 ## 1. Create Task
 
-**POST** `/task/create`
+**POST** `/tasks/create`
 
 ```json
 {
