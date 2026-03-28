@@ -111,7 +111,10 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
   };
   const handleLogOut = async () => {
     try {
-      await logoutUser();
+      const res = await logoutUser();
+      if(res.success) {
+       return navigate(res.url || "/auth/login");
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -395,10 +398,10 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
                 <>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-700 truncate">
-                      Alex Rivea
+                      {user?.name}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
-                      Product Manager
+                      {user?.jobTitle || "Not specified"}
                     </p>
                   </div>
                   <button

@@ -1,9 +1,12 @@
 import { type AxiosResponse } from "axios";
 import { notify } from "./notify";
 import type { UserInterface } from "../interface/user";
+import type { Task } from "../interface/task";
 
 type ApiResponse<T = unknown> = {
   user: UserInterface;
+  tasks: Task[];
+  task: Task;
   success: boolean;
   message?: string;
   data?: T;

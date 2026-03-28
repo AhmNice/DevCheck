@@ -37,7 +37,7 @@ type AuthActions = {
   connectGitHub: () => Promise<
     { success: false } | { success: true; url: string }
   >;
-  logOut: () => Promise<void>;
+  logOut: () => Promise<{ success: false } | { success: true; url?: string }>;
 };
 
 const initialState: AuthState = {
@@ -150,6 +150,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
       });
       authHelpers.stopLoading();
       authHelpers.reset();
+      return { success: true, url: "/auth/login" };
     },
   };
 });

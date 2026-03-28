@@ -126,14 +126,15 @@ export const googleAuthCallback = (
     { session: false },
     async (err: undefined, user: UserInterface) => {
       if (err) {
-        return next(err);
+        return res.redirect(
+          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+        );
       }
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "Google authentication failed: User not found",
-        });
+        return res.redirect(
+          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+        );
       }
 
       try {
@@ -145,9 +146,13 @@ export const googleAuthCallback = (
         });
         await nSession.createSession(res);
 
-        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
-      } catch (sessionError) {
-        return next(sessionError);
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+        );
+      } catch {
+        return res.redirect(
+          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+        );
       }
     },
   )(req, res, next);
