@@ -3,6 +3,7 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
+  useLocation,
 } from "react-router-dom";
 import Toast from "./components/CustomToast";
 import LandingPage from "./pages/LandingPage";
@@ -24,7 +25,9 @@ import AuthSuccess from "./pages/AuthPage/AuthSuccess";
 import ConnectionFailed from "./pages/AuthPage/ConnectionFailed";
 import GitConnectionProgress from "./pages/AuthPage/GitConnectionProgress";
 
+
 function App() {
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
@@ -99,10 +102,10 @@ function App() {
         />
 
         <Route
-          path="/auth/git-connection-progress"
+          path="auth/git-connection-progress"
           element={<GitConnectionProgress />}
         />
-        <Route path="/auth/connection-failed" element={<ConnectionFailed />} />
+        <Route path="auth/connection-failed" element={<ConnectionFailed />} />
       </Route>,
     ),
   );

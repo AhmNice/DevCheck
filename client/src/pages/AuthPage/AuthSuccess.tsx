@@ -1,5 +1,5 @@
 import { HelpCircle, Settings } from "lucide-react";
-import React, { useEffect } from "react";
+import React from "react";
 import { FaCircleCheck } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import type { UserInterface } from "../../interface/user";
@@ -30,25 +30,24 @@ const getAuthTypeName = (type: keyof typeof authType) => {
 
 const SmallProfile = ({ user }: { user: Partial<UserInterface> }) => {
   return (
-    <div className="flex items-center gap-6 border-l-2 border-green-600 p-4 rounded-md bg-[#0b1326]">
+    <div className="flex items-center gap-6 p-4 rounded-md  bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-[-3px_0_0_0_#22c55e_inset]">
       <img
         src={
           user.github_avatar_url ||
-          user.avatar_url ||
           "https://avatars.githubusercontent.com/u/12345678?v=4"
         }
         alt="Profile"
         className="rounded-full w-12 h-12 object-cover"
       />
       <div className="flex-1">
-        <p className="text-[12px] uppercase text-gray-300">
+        <p className="text-[12px] uppercase text-gray-500 dark:text-slate-400">
           Authenticated Account
         </p>
-        <p className="text-sm text-gray-200 font-medium">
+        <p className="text-sm text-gray-900 dark:text-slate-100 font-medium">
           {user.github_username || user.name || user.email || "User"}
         </p>
       </div>
-      <MdOutlineVerified className="text-green-600 text-xl flex-shrink-0" />
+      <MdOutlineVerified className="text-green-500 text-xl shrink-0" />
     </div>
   );
 };
@@ -61,9 +60,9 @@ const FeatureCard = ({
   icon: React.ReactNode;
   text: string;
 }) => (
-  <div className="bg-white backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 border border-gray-100 hover:border-green-200 hover:bg-gray-50 transition-all">
-    <span className="text-primary text-xl flex-shrink-0">{icon}</span>
-    <span className="font-label text-xs uppercase tracking-wider font-medium text-gray-700">
+  <div className="bg-white dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-slate-700 hover:border-green-200 dark:hover:border-green-400/50 hover:bg-gray-50 dark:hover:bg-slate-800/70 transition-all">
+    <span className="text-primary text-xl shrink-0">{icon}</span>
+    <span className="font-label text-xs uppercase tracking-wider font-medium text-gray-700 dark:text-slate-100">
       {text}
     </span>
   </div>
@@ -136,11 +135,11 @@ const AuthSuccess = () => {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
-      <AuthHeader />
+    <div className="bg-gray-50  min-h-screen w-full">
+      {/* <AuthHeader /> */}
       <div className="relative w-full flex flex-col justify-center items-center px-4 py-12">
         {/* Main card */}
-        <div className="bg-white backdrop-blur-sm shadow-2xl rounded-lg p-8 max-w-md w-full relative z-10 border border-gray-100">
+        <div className="bg-white  shadow-2xl rounded-lg p-8 max-w-md w-full relative z-10 ">
           <div className="w-full flex items-center justify-center">
             <div className="p-4 rounded-full border-2 border-[#4ae176] ">
               <FaCircleCheck className="text-[#4ae176] text-3xl" />
@@ -148,10 +147,10 @@ const AuthSuccess = () => {
           </div>
 
           <div className="mt-4">
-            <h2 className="text-center text-gray-900 text-2xl font-semibold">
+            <h2 className="text-center text-gray-900  text-2xl font-semibold">
               {getAuthTypeName(type)} Authentication Successful!
             </h2>
-            <p className="text-center text-gray-500 text-sm mt-3 leading-relaxed">
+            <p className="text-center text-gray-600 dark:text-slate-300 text-sm mt-3 leading-relaxed">
               {getAuthType(type)}
             </p>
           </div>
@@ -162,12 +161,12 @@ const AuthSuccess = () => {
 
           <button
             onClick={handleGoToDashboard}
-            className="mt-8 w-full bg-[#0b1326] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#1a1f3a] transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#4ae176] focus:ring-offset-2"
+            className="mt-8 w-full bg-slate-900 dark:bg-slate-800 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#4ae176] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900"
           >
             Go to Dashboard
           </button>
 
-          <p className="text-center text-gray-400 text-xs mt-4">
+          <p className="text-center text-gray-400 dark:text-slate-400 text-xs mt-4">
             Redirecting automatically in 5 seconds...
           </p>
         </div>
