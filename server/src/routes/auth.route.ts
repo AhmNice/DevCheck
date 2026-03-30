@@ -9,6 +9,7 @@ import {
   login,
   logOut,
   register,
+  userUpdate,
   verifyOTP,
 } from "../controllers/auth.controller.js";
 import {
@@ -20,6 +21,8 @@ import {
 import passport from "passport";
 import { rateLimiter } from "../utils/rateLimiter.js";
 import { verifySession } from "../middleware/verifysession.js";
+import { validateRequest } from "../middleware/validate.js";
+import { userUpdateSchema } from "../schema/user.js";
 
 authRouter.post(
   "/user/register",
@@ -56,6 +59,13 @@ authRouter.get(
   "/connect/github",
   verifySession,
   passport.authenticate("github", { scope: ["read:user", "user:email"] }),
+);
+authRouter.post(
+  "/user/update",
+  verifySession,
+  validateRequest(userUpdateSchema),
+  rateLimiter({ maxTokens: 10, refillInterval: 60 }),
+  userUpdate,
 );
 authRouter.get("/google/callback", googleAuthCallback);
 authRouter.get("/github/callback", githubAuthCallback);

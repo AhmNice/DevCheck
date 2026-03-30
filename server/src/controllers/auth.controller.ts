@@ -15,6 +15,7 @@ import crypto from "crypto";
 import { Session } from "../model/Session.js";
 import { AuthSecurityService } from "../service/authSecurity.service.js";
 import { EmailService } from "../service/Email.service.js";
+import { ZodError } from "zod";
 const emailService = new EmailService();
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
@@ -262,6 +263,35 @@ export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: "User Authenticated",
     user: findUser,
+  });
+});
+export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const user_id = user?.user_id || "";
+  if (req.body === undefined || Object.keys(req.body).length === 0) {
+    throw new BadRequestError("No data provided for update");
+  }
+  let updatedUser;
+
+  try {
+    const validatedData = req.body;
+    await User.updateUserById(user_id, validatedData);
+    updatedUser = await User.findById(user_id);
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      throw new BadRequestError(
+        error.issues[0]?.message || "Invalid input data",
+      );
+    }
+
+    // rethrow other errors (VERY IMPORTANT)
+    throw error;
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user: updatedUser,
   });
 });
 export const logOut = asyncHandler(async (req: Request, res: Response) => {
