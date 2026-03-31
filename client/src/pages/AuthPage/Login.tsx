@@ -7,6 +7,7 @@ import { LuLoaderCircle } from "react-icons/lu";
 import { notify } from "../../util/notify";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
+const CLIENT_URL = new URL(window.location.origin).origin;
 
 interface FormErrors {
   email: string;
@@ -29,15 +30,14 @@ const Login = () => {
 
   const [params] = useSearchParams();
 
+  const messages: Record<string, string> = {
+    github_oauth_error: "GitHub authentication failed",
+    google_oauth_error: "Google authentication failed",
+    user_not_found: "User not found",
+    server_error: "Something went wrong",
+  };
   useEffect(() => {
     const error = params.get("error");
-
-    const messages: Record<string, string> = {
-      oauth_error: "GitHub authentication failed",
-      google_oauth_error: "Google authentication failed",
-      user_not_found: "User not found",
-      server_error: "Something went wrong",
-    };
 
     if (error) {
       notify.error(messages[error] || "Login failed");
@@ -96,107 +96,124 @@ const Login = () => {
   };
 
   const handleGitHubLogin = () => {
-  if (oauthLoading.github) return;
-  setOauthLoading((prev) => ({ ...prev, github: true }));
+    if (oauthLoading.github) return;
+    setOauthLoading((prev) => ({ ...prev, github: true }));
 
-  const width = 600;
-  const height = 700;
-  const left = window.screen.width / 2 - width / 2;
-  const top = window.screen.height / 2 - height / 2;
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
 
-  // Open the OAuth popup
-  const authWindow = window.open(
-    `${API_URL}/auth/github-auth`,
-    "GitHub Login",
-    `width=${width},height=${height},top=${top},left=${left}`
-  );
+    // Open the OAuth popup
+    const authWindow = window.open(
+      `${API_URL}/auth/github-auth`,
+      "GitHub Login",
+      `width=${width},height=${height},top=${top},left=${left}`,
+    );
 
-  if (!authWindow) {
-    console.error("Failed to open popup");
-    setOauthLoading((prev) => ({ ...prev, github: false }));
-    return;
-  }
-
-  // Cleanup function
-  const cleanup = () => {
-    setOauthLoading((prev) => ({ ...prev, github: false }));
-    clearInterval(popupCheckInterval);
-    window.removeEventListener("message", handleMessage);
-  };
-
-  // Listen for messages from the popup
-  const handleMessage = (event: MessageEvent) => {
-
-    if (event.origin !== window.location.origin) return;
-
-    const { success, token, userId } = event.data;
-    console.log("Message from popup:", event.data);
-
-    if (success) {
-
-      notify.success("Logged in with GitHub successfully!");
-
-      window.location.href = "/dashboard";
+    if (!authWindow) {
+      console.error("Failed to open popup");
+      setOauthLoading((prev) => ({ ...prev, github: false }));
+      return;
     }
 
-    cleanup();
-  };
+    // Cleanup function
+    const cleanup = () => {
+      setOauthLoading((prev) => ({ ...prev, github: false }));
+      clearInterval(popupCheckInterval);
+      window.removeEventListener("message", handleMessage);
+    };
 
-  window.addEventListener("message", handleMessage);
+    // Listen for messages from the popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.source?.includes("react-devtools")) return;
+      if (event.origin !== CLIENT_URL) {
+        console.warn(
+          "Rejected message from unauthorized origin:",
+          event.origin,
+        );
+        return;
+      }
 
-  // Check if popup was manually closed
-  const popupCheckInterval = setInterval(() => {
-    if (authWindow.closed) {
-      console.log("Popup closed by user");
+      const { success, token, userId, error, message } = event.data;
+      console.log("Message from popup:", event.data);
+      console.log(success);
+      if (success) {
+        notify.success("Logged in with GitHub successfully!");
+        window.location.href = "/dashboard";
+      } else {
+        const errMsg = messages[error] || "something went wrong";
+        notify.error(errMsg || "something went wrong");
+      }
       cleanup();
-    }
-  }, 500);
-};
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    // Check if popup was manually closed
+    const popupCheckInterval = setInterval(() => {
+      if (authWindow.closed) {
+        console.log("Popup closed by user");
+        cleanup();
+      }
+    }, 500);
+  };
 
   const handleGoogleLogin = async () => {
     if (oauthLoading.google) return;
 
     setOauthLoading((prev) => ({ ...prev, google: true }));
-   const width = 600;
-  const height = 700;
-  const left = window.screen.width / 2 - width / 2;
-  const top = window.screen.height / 2 - height / 2;
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
 
-  const authWindow = window.open(
-    `${API_URL}/auth/google-auth`,
-    "Google Login",
-    `width=${width},height=${height},top=${top},left=${left}`
-  );
-  if (!authWindow) {
-    console.error("Failed to open popup");
-    setOauthLoading((prev) => ({ ...prev, google: false }));
-    return;
-  }
-
-  const cleanup = () => {
-    setOauthLoading((prev) => ({ ...prev, google: false }));
-    clearInterval(popupCheckInterval);
-    window.removeEventListener("message", handleMessage);
-  };
-
-  const handleMessage = (event: MessageEvent) => {
-    if (event.origin !== window.location.origin) return;
-    const { success, token, userId } = event.data;
-    console.log("Message from popup:", event.data);
-    if (success) {
-      notify.success("Logged in with Google successfully!");
-      window.location.href = "/dashboard";
+    const authWindow = window.open(
+      `${API_URL}/auth/google-auth`,
+      "Google Login",
+      `width=${width},height=${height},top=${top},left=${left}`,
+    );
+    if (!authWindow) {
+      console.error("Failed to open popup");
+      setOauthLoading((prev) => ({ ...prev, google: false }));
+      return;
     }
-    cleanup();
-  }
-  window.addEventListener("message", handleMessage);
 
-  const popupCheckInterval = setInterval(() => {
-    if (authWindow.closed) {
-      console.log("Popup closed by user");
+    const cleanup = () => {
+      setOauthLoading((prev) => ({ ...prev, google: false }));
+      clearInterval(popupCheckInterval);
+      window.removeEventListener("message", handleMessage);
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.source?.includes("react-devtools")) return;
+      if (event.origin !== CLIENT_URL) {
+        console.log(event.origin, CLIENT_URL);
+        console.warn(
+          "Rejected message from unauthorized origin:",
+          event.origin,
+        );
+        return;
+      }
+      const { success, token, userId, error, message } = event.data;
+
+      if (success) {
+        notify.success("Logged in with Google successfully!");
+        window.location.href = "/dashboard";
+      } else {
+        const errMsg = messages[error] || "something went wrong";
+        notify.error(errMsg || "something went wrong");
+      }
       cleanup();
-    }
-  }, 500);
+    };
+    window.addEventListener("message", handleMessage);
+
+    const popupCheckInterval = setInterval(() => {
+      if (authWindow.closed) {
+        console.log("Popup closed by user");
+        cleanup();
+      }
+    }, 500);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,7 +302,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-7 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-5 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (

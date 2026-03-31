@@ -128,13 +128,13 @@ export const googleAuthCallback = (
     async (err: undefined, user: UserInterface) => {
       if (err) {
         return res.redirect(
-          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error`,
         );
       }
-
+      console.log("Google OAuth callback user:", user);
       if (!user) {
         return res.redirect(
-          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=user_not_found`,
         );
       }
 
@@ -151,14 +151,14 @@ export const googleAuthCallback = (
           `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
         );
       } catch {
+        console.error("Error during Google OAuth callback:", err);
         return res.redirect(
-          `${config.CLIENT_URL}/login?error=google_oauth_error`,
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=server_error`,
         );
       }
     },
   )(req, res, next);
 };
-
 export const githubAuthCallback = (
   req: Request,
   res: Response,
@@ -168,29 +168,56 @@ export const githubAuthCallback = (
     "github",
     { session: false },
     async (err: undefined, user: UserInterface) => {
-      if (err) {
-        return res.redirect(`${config.CLIENT_URL}/login?error=oauth_error`);
+      const state = JSON.parse(req.query.state as string);
+      if (state.type === "login") {
+        if (err) {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+          );
+        }
+
+        if (!user) {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+          );
+        }
+
+        try {
+          const nSession = new Session({
+            user_id: user._id,
+            userName: user.name,
+            email: user.email,
+            role: user.account_role,
+          });
+
+          await nSession.createSession(res);
+
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+          );
+        } catch {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+          );
+        }
       }
 
-      if (!user) {
-        return res.redirect(`${config.CLIENT_URL}/login?error=user_not_found`);
-      }
+      if (state.type === "connect") {
+        if (err) {
+          return res.redirect(
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=authentication_failed`,
+          );
+        }
 
-      try {
-        const nSession = new Session({
-          user_id: user._id,
-          userName: user.name,
-          email: user.email,
-          role: user.account_role,
-        });
-
-        await nSession.createSession(res);
+        if (!user) {
+          return res.redirect(
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+          );
+        }
 
         return res.redirect(
-          `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+          `${config.CLIENT_URL}/github-connect-callback.html?token=success&user_id=${user._id}`,
         );
-      } catch {
-        return res.redirect(`${config.CLIENT_URL}/login?error=server_error`);
       }
     },
   )(req, res, next);
@@ -259,10 +286,11 @@ export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
   if (!findUser) {
     throw new BadRequestError("User not found");
   }
+  const { password: _password, ...safeData } = findUser;
   return res.status(200).json({
     success: true,
     message: "User Authenticated",
-    user: findUser,
+    user: safeData,
   });
 });
 export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
@@ -284,7 +312,6 @@ export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
       );
     }
 
-    // rethrow other errors (VERY IMPORTANT)
     throw error;
   }
 

@@ -23,6 +23,7 @@ import { rateLimiter } from "../utils/rateLimiter.js";
 import { verifySession } from "../middleware/verifysession.js";
 import { validateRequest } from "../middleware/validate.js";
 import { userUpdateSchema } from "../schema/user.js";
+import { connectGitHub, githubLogin } from "../github/github_auth.js";
 
 authRouter.post(
   "/user/register",
@@ -53,12 +54,13 @@ authRouter.get(
 authRouter.get(
   "/github-auth",
   rateLimiter({ maxTokens: 20, refillInterval: 60 }),
-  passport.authenticate("github", { scope: ["user:email"] }),
+  githubLogin,
 );
 authRouter.get(
   "/connect/github",
   verifySession,
-  passport.authenticate("github", { scope: ["read:user", "user:email"] }),
+  rateLimiter({ maxTokens: 20, refillInterval: 60 }),
+  connectGitHub,
 );
 authRouter.post(
   "/user/update",
