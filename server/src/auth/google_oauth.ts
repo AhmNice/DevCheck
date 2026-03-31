@@ -44,12 +44,12 @@ passport.use(
           account_role: "user",
           github_id: null,
         };
-        const userExists = await User.findByGoogleId(profile.id);
+        let userExists = await User.findByGoogleId(profile.id);
         if (!userExists) {
           const newUser = new User(user);
-          await newUser.googleSave();
+          userExists = await newUser.googleSave();
         }
-        done(null, user);
+        done(null, userExists);
       } catch (error) {
         console.error("DEBUG: Google Strategy Error:", error);
         done(error, undefined);

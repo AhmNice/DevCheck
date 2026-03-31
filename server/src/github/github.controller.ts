@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { BadRequestError } from "../utils/errorHandler.js";
 import { User } from "../model/User.js";
@@ -7,6 +7,9 @@ import { Task } from "../model/Task.js";
 import { createGitHubWebhook } from "../hooks/github_webhook.js";
 import { GitHubRepo } from "../model/Repo.js";
 import { pool } from "../config/db.config.js";
+import passport from "passport";
+import UserInterface from "../interface/user.interface.js";
+import config from "../config/config.js";
 
 interface GitHubIssuePayload {
   action: string;
@@ -198,3 +201,30 @@ export const githubWebhook = asyncHandler(
     });
   },
 );
+export const connectGitHub = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  passport.authenticate(
+    "github",
+    { session: false },
+    async (err: undefined, user: UserInterface) => {
+      if (err) {
+        return res.redirect(
+          `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=authentication_failed`,
+        );
+      }
+
+      if (!user) {
+        return res.redirect(
+          `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+        );
+      }
+
+      return res.redirect(
+        `${config.CLIENT_URL}/github-connect-callback.html?token=success&user_id=${user._id}`,
+      );
+    },
+  )(req, res, next);
+};
