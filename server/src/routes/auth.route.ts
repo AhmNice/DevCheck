@@ -2,11 +2,14 @@ import express from "express";
 
 const authRouter = express.Router();
 import {
+  checkAuth,
   githubAuthCallback,
   // githubAuthCallback,
   googleAuthCallback,
   login,
+  logOut,
   register,
+  userUpdate,
   verifyOTP,
 } from "../controllers/auth.controller.js";
 import {
@@ -18,6 +21,9 @@ import {
 import passport from "passport";
 import { rateLimiter } from "../utils/rateLimiter.js";
 import { verifySession } from "../middleware/verifysession.js";
+import { validateRequest } from "../middleware/validate.js";
+import { userUpdateSchema } from "../schema/user.js";
+import { connectGitHub, githubLogin } from "../github/github_auth.js";
 
 authRouter.post(
   "/user/register",
@@ -48,14 +54,24 @@ authRouter.get(
 authRouter.get(
   "/github-auth",
   rateLimiter({ maxTokens: 20, refillInterval: 60 }),
-  passport.authenticate("github", { scope: ["user:email"] }),
+  githubLogin,
 );
 authRouter.get(
   "/connect/github",
   verifySession,
-  passport.authenticate("github", { scope: ["read:user", "user:email"] }),
+  rateLimiter({ maxTokens: 20, refillInterval: 60 }),
+  connectGitHub,
+);
+authRouter.post(
+  "/user/update",
+  verifySession,
+  validateRequest(userUpdateSchema),
+  rateLimiter({ maxTokens: 10, refillInterval: 60 }),
+  userUpdate,
 );
 authRouter.get("/google/callback", googleAuthCallback);
 authRouter.get("/github/callback", githubAuthCallback);
 
+authRouter.get("/user/logout", verifySession, logOut);
+authRouter.get("/user/authenticate", verifySession, checkAuth);
 export default authRouter;

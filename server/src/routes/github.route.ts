@@ -4,7 +4,7 @@ import {
   connectRepo,
   getUserRepos,
   searchRepos,
-} from "../controllers/github.controller.js";
+} from "../github/github.controller.js";
 import { verifySession } from "../middleware/verifysession.js";
 
 githubRoute.get("/repos", verifySession, getUserRepos);

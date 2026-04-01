@@ -23,3 +23,11 @@ export default interface UserInterface {
   created_at: Date;
   updated_at: Date;
 }
+export interface UserUpdateInterface {
+  name?: string;
+  bio?: string;
+  profile_picture?: string;
+  job_role?: string;
+  password?: string;
+  email?: string;
+}

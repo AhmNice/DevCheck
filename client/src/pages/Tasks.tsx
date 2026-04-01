@@ -1,171 +1,36 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../Layout/DashboardLayout";
 import TaskCard, { type taskProps } from "../components/cards/TaskCard";
-import { Plus } from "lucide-react";
+import { CheckCircle, Plus } from "lucide-react";
 import CreateTask from "./CreateTask";
+import { useTaskStore } from "../store/taskStore";
+import { useAuthStore } from "../store/authstore";
+import type { Task } from "../interface/task";
 
-const taskData: taskProps[] = [
-  {
-    tag: "HIGH PRIORITY",
-    title: "Refactor Auth Middleware",
-    description:
-      "Ensure OAuth providers are correctly handled in the new microservices architecture and update dependencies",
-    percentage: 60,
-    startDate: "Oct 24",
-    endDate: "Nov 18",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Setup Google Cloud Console credentials",
-        completed: false,
-      },
-      {
-        id: 2,
-        title: "Configure redirect URIs for development environment",
-        completed: false,
-      },
-      {
-        id: 3,
-        title: "Implement Passport.js strategy for GitHub",
-        completed: false,
-      },
-    ],
-  },
-  {
-    tag: "MEDIUM PRIORITY",
-    title: "Design System Audth",
-    description:
-      "Review the current Figma components against the production React library for visual consistency.",
-    percentage: 20,
-    startDate: "Oct 24",
-    endDate: "Nov 18",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Setup Google Cloud Console credentials",
-        completed: false,
-      },
-      {
-        id: 2,
-        title: "Configure redirect URIs for development environment",
-        completed: false,
-      },
-    ],
-  },
-  {
-    tag: "LOW PRIORITY",
-    title: "Update Documentation",
-    description:
-      "Refresh the README and API references to reflect the recent endpoint changes in v2.4.",
-    percentage: 95,
-    startDate: "Oct 24",
-    endDate: "Nov 18",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Setup Google Cloud Console credentials",
-        completed: false,
-      },
-      {
-        id: 2,
-        title: "Configure redirect URIs for development environment",
-        completed: false,
-      },
-      {
-        id: 3,
-        title: "Implement Passport.js strategy for GitHub",
-        completed: false,
-      },
-    ],
-  },
-  {
-    tag: "HIGH PRIORITY",
-    title: "Server Migration",
-    description:
-      "Move current staging environment to AWS us-east-1 and verify database latency benchmarks.",
-    percentage: 45,
-    startDate: "Oct 30",
-    endDate: "Nov 18",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Setup Google Cloud Console credentials",
-        completed: false,
-      },
-      {
-        id: 2,
-        title: "Configure redirect URIs for development environment",
-        completed: false,
-      },
-      {
-        id: 3,
-        title: "Implement Passport.js strategy for GitHub",
-        completed: false,
-      },
-    ],
-  },
-  {
-    tag: "MEDIUM PRIORITY",
-    title: "API Rate Limiting",
-    description:
-      "Implement rate limiting for public API endpoints to prevent abuse and ensure fair usage.",
-    percentage: 30,
-    startDate: "Nov 1",
-    endDate: "Nov 15",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Research rate limiting strategies",
-        completed: true,
-      },
-      {
-        id: 2,
-        title: "Implement Redis-based rate limiter",
-        completed: false,
-      },
-    ],
-  },
-  {
-    tag: "LOW PRIORITY",
-    title: "UI Component Library",
-    description:
-      "Create reusable UI components and document them in Storybook.",
-    percentage: 15,
-    startDate: "Nov 5",
-    endDate: "Nov 30",
-    subtaskData: [
-      {
-        id: 1,
-        title: "Set up Storybook",
-        completed: true,
-      },
-      {
-        id: 2,
-        title: "Create Button component",
-        completed: false,
-      },
-      {
-        id: 3,
-        title: "Create Input component",
-        completed: false,
-      },
-    ],
-  },
-];
 
 const Tasks = () => {
   const [isActive, setIsActive] = useState("all");
   const [modal, setModal] = useState(false);
-  const [tasks, setTasks] = useState<taskProps[]>(taskData);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
+  const { tasks, fetchTasks,createTask } = useTaskStore();
+  const { user } = useAuthStore();
+  useEffect(() => {
+    const handleTaskFetch = async () => {
+      try {
+        await fetchTasks({ user_id: `${user?._id}` });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    handleTaskFetch();
+  }, []);
   // Listen for sidebar collapse changes
   useEffect(() => {
     const handleSidebarChange = (e: CustomEvent) => {
       setIsSidebarCollapsed(e.detail);
     };
 
-    window.addEventListener('sidebarCollapse' as any, handleSidebarChange);
+    window.addEventListener("sidebarCollapse" as any, handleSidebarChange);
 
     // Check initial sidebar state
     const checkSidebarState = () => {
@@ -176,31 +41,40 @@ const Tasks = () => {
     setTimeout(checkSidebarState, 100); // Small delay to ensure DOM is ready
 
     return () => {
-      window.removeEventListener('sidebarCollapse' as any, handleSidebarChange);
+      window.removeEventListener("sidebarCollapse" as any, handleSidebarChange);
     };
   }, []);
 
   const filterButtons = [
     { id: "all", label: "All Tasks" },
-    { id: "progress", label: "In Progress" },
-    { id: "review", label: "Review" },
-    { id: "backlog", label: "Backlog" },
+    { id: "in_progress", label: "In Progress" },
+    { id: "pending", label: "Pending" },
+    { id: "completed", label: "Completed" },
   ];
 
-  function handleTaskCreate(task: taskProps): void {
-    throw new Error("Function not implemented.");
+  async function handleTaskCreate(task: Task): Promise<void> {
+    try {
+      const res = await createTask(task);
+      if(!res.success){
+        setModal(true);
+        return;
+      }
+      setModal(false);
+    } catch (error) {
+      console.error("Error creating task:", error);
+    }
   }
 
   return (
     <>
-      <DashboardLayout >
+      <DashboardLayout>
         <div className="relative h-full">
           {/* Header Section */}
           <div className="flex flex-col p-3 border-b border-b-gray-200/60 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="py-2">
               <h2 className="text-xl font-bold text-gray-900">Active Tasks</h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                You have {tasks.length} tasks in progress for this week
+                You have {tasks.filter((task) => task.status === "in_progress").length} tasks in progress for this week
               </p>
             </div>
 
@@ -233,16 +107,7 @@ const Tasks = () => {
                 }`}
               >
                 {tasks.map((task, index) => (
-                  <TaskCard
-                    key={index}
-                    subtaskData={task.subtaskData}
-                    tag={task.tag}
-                    title={task.title}
-                    description={task.description}
-                    percentage={task.percentage}
-                    startDate={task.startDate}
-                    endDate={task.endDate}
-                  />
+                  <TaskCard task={task} key={index} />
                 ))}
               </div>
 
@@ -252,8 +117,12 @@ const Tasks = () => {
                   <div className="bg-gray-100 rounded-full p-4 mb-3">
                     <Plus size={24} className="text-gray-400" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">No tasks yet</h3>
-                  <p className="text-sm text-gray-500 mb-4">Create your first task to get started</p>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                    No tasks yet
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Create your first task to get started
+                  </p>
                   <button
                     onClick={() => setModal(true)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -262,6 +131,100 @@ const Tasks = () => {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+          {/* In Progress Tasks */}
+          {isActive === "in_progress" && (
+            <div className="p-4">
+              <div
+                className={`grid gap-4 transition-all duration-300 ${
+                  isSidebarCollapsed
+                    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 md:grid-cols-2"
+                }`}
+              >
+                {tasks.filter((task) => task.status === "in_progress").length >
+                0 ? (
+                  tasks
+                    .filter((task) => task.status === "in_progress")
+                    .map((task, index) => <TaskCard task={task} key={index} />)
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center col-span-full">
+                    <div className="bg-gray-100 rounded-full p-4 mb-3">
+                      <Plus size={24} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
+                      No tasks in progress
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Start working on a task to see it here
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* pending Tasks */}
+          {isActive === "pending" && (
+            <div className="p-4">
+              <div
+                className={`grid gap-4 transition-all duration-300 ${
+                  isSidebarCollapsed
+                    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 md:grid-cols-2"
+                }`}
+              >
+                {tasks.filter((task) => task.status === "pending").length >
+                0 ? (
+                  tasks
+                    .filter((task) => task.status === "pending")
+                    .map((task, index) => <TaskCard task={task} key={index} />)
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center col-span-full">
+                    <div className="bg-gray-100 rounded-full p-4 mb-3">
+                      <Plus size={24} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
+                      No pending tasks
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Tasks that are pending will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* completed Tasks */}
+          {isActive === "completed" && (
+            <div className="p-4">
+              <div
+                className={`grid gap-4 transition-all duration-300 ${
+                  isSidebarCollapsed
+                    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 md:grid-cols-2"
+                }`}
+              >
+                {tasks.filter((task) => task.status === "completed").length >
+                0 ? (
+                  tasks
+                    .filter((task) => task.status === "completed")
+                    .map((task, index) => <TaskCard task={task} key={index} />)
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center col-span-full">
+                    <div className="bg-gray-100 rounded-full p-4 mb-3">
+                      <CheckCircle size={24} className="text-green-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">
+                      No completed tasks
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Completed tasks will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -278,7 +241,7 @@ const Tasks = () => {
 
           {/* Create Task Modal */}
           {modal && (
-            <CreateTask setModel={setModal} onTaskCreate={handleTaskCreate} />
+            <CreateTask setModel={setModal}  />
           )}
         </div>
       </DashboardLayout>

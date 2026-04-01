@@ -15,6 +15,7 @@ import crypto from "crypto";
 import { Session } from "../model/Session.js";
 import { AuthSecurityService } from "../service/authSecurity.service.js";
 import { EmailService } from "../service/Email.service.js";
+import { ZodError } from "zod";
 const emailService = new EmailService();
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
@@ -126,14 +127,15 @@ export const googleAuthCallback = (
     { session: false },
     async (err: undefined, user: UserInterface) => {
       if (err) {
-        return next(err);
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error`,
+        );
       }
-
+      console.log("Google OAuth callback user:", user);
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "Google authentication failed: User not found",
-        });
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=user_not_found`,
+        );
       }
 
       try {
@@ -145,9 +147,14 @@ export const googleAuthCallback = (
         });
         await nSession.createSession(res);
 
-        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
-      } catch (sessionError) {
-        return next(sessionError);
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+        );
+      } catch {
+        console.error("Error during Google OAuth callback:", err);
+        return res.redirect(
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=server_error`,
+        );
       }
     },
   )(req, res, next);
@@ -161,28 +168,56 @@ export const githubAuthCallback = (
     "github",
     { session: false },
     async (err: undefined, user: UserInterface) => {
-      if (err) {
-        return next(err);
+      const state = JSON.parse(req.query.state as string);
+      if (state.type === "login") {
+        if (err) {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+          );
+        }
+
+        if (!user) {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+          );
+        }
+
+        try {
+          const nSession = new Session({
+            user_id: user._id,
+            userName: user.name,
+            email: user.email,
+            role: user.account_role,
+          });
+
+          await nSession.createSession(res);
+
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=success&user_id=${user._id}`,
+          );
+        } catch {
+          return res.redirect(
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+          );
+        }
       }
 
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: "github authentication failed: User not found",
-        });
-      }
+      if (state.type === "connect") {
+        if (err) {
+          return res.redirect(
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=authentication_failed`,
+          );
+        }
 
-      try {
-        const nSession = new Session({
-          user_id: user._id,
-          userName: user.name,
-          email: user.email,
-          role: user.account_role,
-        });
-        await nSession.createSession(res);
-        return res.redirect(`${config.CLIENT_URL}/user-auth/oauth-success`);
-      } catch (error) {
-        return next(error);
+        if (!user) {
+          return res.redirect(
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+          );
+        }
+
+        return res.redirect(
+          `${config.CLIENT_URL}/github-connect-callback.html?token=success&user_id=${user._id}`,
+        );
       }
     },
   )(req, res, next);
@@ -245,3 +280,57 @@ export const resetPassword = asyncHandler(
     });
   },
 );
+export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const findUser = await User.findById(`${user?.user_id}`);
+  if (!findUser) {
+    throw new BadRequestError("User not found");
+  }
+  const { password: _password, ...safeData } = findUser;
+  return res.status(200).json({
+    success: true,
+    message: "User Authenticated",
+    user: safeData,
+  });
+});
+export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const user_id = user?.user_id || "";
+  if (req.body === undefined || Object.keys(req.body).length === 0) {
+    throw new BadRequestError("No data provided for update");
+  }
+  let updatedUser;
+
+  try {
+    const validatedData = req.body;
+    await User.updateUserById(user_id, validatedData);
+    updatedUser = await User.findById(user_id);
+  } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      throw new BadRequestError(
+        error.issues[0]?.message || "Invalid input data",
+      );
+    }
+
+    throw error;
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user: updatedUser,
+  });
+});
+export const logOut = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  await new Session({
+    user_id: user?.user_id || "",
+    userName: user?.userName || "",
+    email: user?.email || "",
+    role: user?.role || "",
+  }).destroySession(req, res);
+  return res.status(200).json({
+    success: true,
+    message: "User logged out successfully",
+  });
+});

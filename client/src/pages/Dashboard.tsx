@@ -137,7 +137,7 @@ const Dashboard = () => {
           <div className="flex py-6 flex-col md:flex-row md:gap-6 gap-3">
             {/* Recent Tasks */}
             <div className="border flex-1 p-3 border-gray-400/20 bg-white shadow-sm rounded-xl">
-              <h3 className="p-2 text-sm font-bold">Recent Tasks</h3>
+              <h3 className="p-2 text-sm  text-gray-900 font-bold">Recent Tasks</h3>
               <div className="w-full h-px bg-gray-300/20"></div>
               {taskData.map((task, i) => (
                 <div key={i}>
@@ -153,7 +153,7 @@ const Dashboard = () => {
 
             {/* Upcoming Milestones */}
             <div className="border flex-1 p-3 border-gray-400/20 bg-white shadow-sm rounded-xl">
-              <h3 className="p-2 text-sm font-bold">Upcoming Milestones</h3>
+              <h3 className="p-2 text-sm text-gray-900 font-bold">Upcoming Milestones</h3>
               <div className="w-full h-px bg-gray-300/20 mb-3"></div>
               <div className="text-xs text-gray-500 p-2">
                 No upcoming milestones

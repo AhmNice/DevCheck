@@ -72,6 +72,11 @@ passport.use(
           if (!loggedInUser) {
             return done(new BadRequestError("Logged-in user not found."));
           }
+          if (loggedInUser.github_id) {
+            return done(
+              new BadRequestError("GitHub account already connected."),
+            );
+          }
           await User.updateUserById(loggedInUser._id, {
             github_id: profile.id,
             github_username: profile.username || null,
