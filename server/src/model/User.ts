@@ -26,6 +26,11 @@ export class User implements UserType {
   otp?: string | null;
   otp_expiry?: Date | null | undefined;
   github_access_token?: string | null;
+  github_connected?: boolean | null;
+  github_connected_at?: Date | null;
+  github_username?: string | null;
+  github_profile_url?: string | null;
+  github_avatar_url?: string | null;
   constructor(parameters: UserType) {
     Object.assign(this, parameters);
   }
@@ -176,8 +181,8 @@ export class User implements UserType {
   }
   async githubSave() {
     const query = `
-      INSERT INTO core.users (name, email, account_role, github_id, profile_picture, password, is_verified, github_access_token)
-      VALUES ($1, $2, $3, $4, $5, $6, true, $7)
+      INSERT INTO core.users (name, email, account_role, github_id, profile_picture, password, is_verified, github_access_token,github_connected, github_connected_at,github_username,github_profile_url,github_avatar_url)
+      VALUES ($1, $2, $3, $4, $5, $6, true, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `;
     const values = [
@@ -188,6 +193,11 @@ export class User implements UserType {
       this.profile_picture,
       this.password,
       this.github_access_token,
+      this.github_connected,
+      this.github_connected_at,
+      this.github_username,
+      this.github_profile_url,
+      this.github_avatar_url,
     ];
     let result;
     try {
@@ -205,6 +215,11 @@ export class User implements UserType {
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
       github_access_token: _token,
+      github_connected: _github_connected,
+      github_connected_at: _github_connected_at,
+      github_username: _github_username,
+      github_profile_url: _github_profile_url,
+      github_avatar_url: _github_avatar_url,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;
@@ -231,6 +246,11 @@ export class User implements UserType {
       resetPassword_token: _resetPassword_token,
       resetPassword_token_expiry: _resetPassword_token_expiry,
       github_access_token: _token,
+      github_connected: _github_connected,
+      github_connected_at: _github_connected_at,
+      github_username: _github_username,
+      github_profile_url: _github_profile_url,
+      github_avatar_url: _github_avatar_url,
       ...cleanedUser
     } = result.rows[0];
     return cleanedUser;
@@ -395,7 +415,7 @@ export class User implements UserType {
     if (fields.length === 0) {
       throw new BadRequestError("No fields to update");
     }
-    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE _id = $${index}`;
+    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE _id = $${index} RETURNING *`;
     values.push(user_id);
     let result;
     try {
@@ -403,6 +423,49 @@ export class User implements UserType {
     } catch (error) {
       throw new BadRequestError(
         "Error updating user: " + (error as Error).message,
+      );
+    }
+    return result.rows[0];
+  }
+  static async updateGithubUserById(
+    user_id: string,
+    updates: Partial<UserInterface>,
+  ) {
+    const fields = [];
+    const values = [];
+    let index = 1;
+
+    const allowedUpdateFields = new Set([
+      "github_id",
+      "github_username",
+      "github_profile_url",
+      "github_avatar_url",
+      "github_access_token",
+      "github_connected",
+      "github_connected_at",
+    ]);
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (!allowedUpdateFields.has(key as keyof UserInterface)) {
+        continue;
+      }
+      if (value !== undefined) {
+        fields.push(`${key} = $${index}`);
+        values.push(value);
+        index++;
+      }
+    }
+    if (fields.length === 0) {
+      throw new BadRequestError("No fields to update");
+    }
+    const query = `UPDATE core.users SET ${fields.join(", ")} WHERE _id = $${index} RETURNING *`;
+    values.push(user_id);
+    let result;
+    try {
+      result = await pool.query(query, values);
+    } catch (error) {
+      throw new BadRequestError(
+        "Error updating GitHub user: " + (error as Error).message,
       );
     }
     return result.rows[0];

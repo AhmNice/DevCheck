@@ -168,8 +168,11 @@ export const githubAuthCallback = (
     "github",
     { session: false },
     async (err: undefined, user: UserInterface) => {
-      const state = JSON.parse(req.query.state as string);
-      if (state.type === "login") {
+      const state = JSON.parse(req.query.state as string) as {
+        type: string;
+        userId?: string;
+      } | null;
+      if (state && state.type === "login") {
         if (err) {
           return res.redirect(
             `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
@@ -202,7 +205,7 @@ export const githubAuthCallback = (
         }
       }
 
-      if (state.type === "connect") {
+      if (state && state.type === "connect") {
         if (err) {
           return res.redirect(
             `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=authentication_failed`,
@@ -214,7 +217,7 @@ export const githubAuthCallback = (
             `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
           );
         }
-
+        console.log(user);
         return res.redirect(
           `${config.CLIENT_URL}/github-connect-callback.html?token=success&user_id=${user._id}`,
         );
