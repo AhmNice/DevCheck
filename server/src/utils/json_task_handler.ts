@@ -136,7 +136,7 @@ export const jsonProjectHandler = asyncHandler(
           description: taskData.description,
           due_date: taskData.due_date
             ? new Date(taskData.due_date)
-            : new Date(Date.now() + 7),
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           status: taskData.status,
           priority: taskData.priority,
           project_id: savedProject._id,
@@ -152,7 +152,7 @@ export const jsonProjectHandler = asyncHandler(
               description: subtaskData.description,
               due_date: subtaskData.due_date
                 ? new Date(subtaskData.due_date)
-                : new Date(Date.now() + 7),
+                : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
               status: subtaskData.status,
             });
 

@@ -9,7 +9,6 @@ import { TaskInterface } from "../interface/task.interface.js";
 import { Project } from "../model/Project.js";
 import { TaskSchema } from "../schema/task_schema.js";
 
-const client = await pool.connect();
 export const createTask = asyncHandler(async (req: Request, res: Response) => {
   const validatedData = TaskSchema.parse(req.body);
   const {
@@ -32,7 +31,7 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
   if (isNaN(parsedDate.getTime())) {
     throw new BadRequestError("Invalid due_date format");
   }
-
+  const client = await pool.connect();
   let project = null;
   if (project_id) {
     project = await Project.findById(`${project_id}`);
@@ -42,7 +41,6 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
   }
   let savedTask: TaskInterface;
   try {
-    const client = await pool.connect();
     client.query("BEGIN");
     const task = new Task({
       user_id,
@@ -91,7 +89,7 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
 export const saveSubtask = asyncHandler(async (req: Request, res: Response) => {
   const { task_id } = req.params;
   const { title, description, due_date, status } = req.body;
-
+  const client = await pool.connect();
   if (!title || !due_date) {
     throw new BadRequestError("Missing required fields: title and due_date");
   }
@@ -131,6 +129,7 @@ export const saveSubtask = asyncHandler(async (req: Request, res: Response) => {
 });
 export const getSubtasks = asyncHandler(async (req: Request, res: Response) => {
   const { task_id } = req.params;
+  const client = await pool.connect();
   const task = await Task.findById(client, `${task_id}`);
   if (!task) {
     throw new BadRequestError("Task not found");
