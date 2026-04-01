@@ -34,6 +34,7 @@ type AuthActions = {
     payload: RegisterPayload,
   ) => Promise<{ success: false } | { success: true; url: string }>;
   checkAuthentication: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   connectGitHub: () => Promise<
     { success: false } | { success: true; url: string }
   >;
@@ -121,6 +122,22 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     },
 
     checkAuthentication: async () => {
+      authHelpers.start(true);
+      await handleRequest({
+        request: () => api.get(`/auth/user/authenticate`),
+        onSuccess: (data) => {
+          authHelpers.success(data.user);
+        },
+        onError: (error) => {
+          authHelpers.error(
+            error?.response?.data?.message || "Authentication check failed",
+          );
+        },
+        showToast: false,
+      });
+      authHelpers.stopLoading();
+    },
+    refreshUser: async () => {
       authHelpers.start(true);
       await handleRequest({
         request: () => api.get(`/auth/user/authenticate`),

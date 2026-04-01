@@ -15,6 +15,7 @@ import {
   ChevronDown,
   FolderOpen,
   ClipboardList,
+  User,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -69,6 +70,11 @@ const sidebarData: SidebarItem[] = [
     text: "Import",
     path: "/import",
   },
+  {
+    icon: Settings,
+    text: "Settings",
+    path: "/settings",
+  }
 ];
 
 const Sidebar = ({ onCollapseChange }: SidebarProps) => {
@@ -352,9 +358,9 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
                   onClick={() => navigate("/setting")}
                   className="flex justify-center p-3 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group"
                 >
-                  <Settings className="w-5 h-5" />
+                  <User className="w-5 h-5" />
                   <span className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                    Settings
+                    Profile
                   </span>
                 </button>
                 <button className="flex justify-center p-3 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-xl w-full transition-colors relative group">
@@ -367,11 +373,11 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
             ) : (
               <div className="flex gap-2">
                 <button
-                  onClick={() => navigate("/setting")}
+                  onClick={() => navigate("/profile")}
                   className="flex-1 flex items-center justify-center cursor-pointer gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <Settings className="w-4 h-4" />
-                  <span className="text-sm">Settings</span>
+                  <User className="w-4 h-4" />
+                  <span className="text-sm">Profile</span>
                 </button>
                 <button className="flex-1 flex items-center justify-center cursor-pointer gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <HelpCircle className="w-4 h-4" />
