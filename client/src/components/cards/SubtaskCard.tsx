@@ -15,7 +15,7 @@ const SubtaskCard = ({
   return (
     <div
       key={todo._id}
-      className="flex items-center gap-3 group p-1.5 hover:bg-slate-50 rounded-md transition-all duration-200"
+      className="flex items-center gap-3 group p-1.5 hover:bg-gray-100 rounded-md transition-all duration-200"
     >
       <input
         type="checkbox"
@@ -26,8 +26,8 @@ const SubtaskCard = ({
       <span
         className={`text-xs flex-1 transition-all ${
           todo.status === "completed"
-            ? "text-slate-400 line-through"
-            : "text-slate-700 font-medium"
+            ? "text-gray-400 line-through"
+            : "text-gray-700 font-medium"
         }`}
       >
         {todo.title}
