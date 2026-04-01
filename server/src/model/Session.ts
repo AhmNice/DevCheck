@@ -178,17 +178,7 @@ export class Session {
   async destroySession(req: Request, res: Response): Promise<void> {
     const refreshToken = req.cookies[`${config.SESSION_COOKIE_NAME_REFRESH}`];
     if (refreshToken) {
-      const query = `SELECT refresh_token FROM session.tokens WHERE user_id = $1`;
-      const result = await pool.query(query, [req.user?.user_id]);
-      if (result.rowCount) {
-        for (const row of result.rows) {
-          const isMatch = await bcrypt.compare(refreshToken, row.refresh_token);
-          if (isMatch) {
-            await this.deleteSession(row.refresh_token);
-            break;
-          }
-        }
-      }
+      await this.deleteSession(refreshToken);
     }
     res.clearCookie(`${config.SESSION_COOKIE_NAME_ACCESS}`);
     res.clearCookie(`${config.SESSION_COOKIE_NAME_REFRESH}`);
