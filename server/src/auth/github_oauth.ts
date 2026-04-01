@@ -22,6 +22,8 @@ type UserType = Pick<
   | "github_username"
   | "github_profile_url"
   | "github_avatar_url"
+  | "github_connected"
+  | "github_connected_at"
 >;
 
 passport.use(
@@ -41,7 +43,6 @@ passport.use(
       done: (err: Error | null, user?: unknown) => void,
     ) => {
       try {
-        console.log("GitHub profile:", profile);
         let email = profile.emails?.[0]?.value;
         // If email not in profile → fetch from GitHub API
         if (!email) {
@@ -67,8 +68,13 @@ passport.use(
             new BadRequestError("We couldn't access your GitHub email."),
           );
         }
-        if (req.user && req.user.user_id) {
-          const loggedInUser = await User.findById(req.user.user_id);
+
+        const state = JSON.parse(req.query.state as string) as {
+          type: string;
+          userId?: string;
+        } | null;
+        if (state && state.type === "connect" && state.userId) {
+          const loggedInUser = await User.findById(state.userId);
           if (!loggedInUser) {
             return done(new BadRequestError("Logged-in user not found."));
           }
@@ -77,17 +83,20 @@ passport.use(
               new BadRequestError("GitHub account already connected."),
             );
           }
-          await User.updateUserById(loggedInUser._id, {
-            github_id: profile.id,
-            github_username: profile.username || null,
-            github_profile_url: profile.profileUrl || null,
-            github_avatar_url: profile.photos?.[0].value || null,
-            github_access_token: accessToken,
-            github_connected: true,
-            github_connected_at: new Date(),
-          });
-
-          return done(null, loggedInUser);
+          const updatedUser = await User.updateGithubUserById(
+            loggedInUser._id,
+            {
+              github_id: profile.id,
+              github_username: profile.username || null,
+              github_profile_url: profile.profileUrl || null,
+              github_avatar_url: profile.photos?.[0].value || null,
+              github_access_token: accessToken,
+              github_connected: true,
+              github_connected_at: new Date(),
+            },
+          );
+          console.log("GitHub account connected for user:", updatedUser);
+          return done(null, updatedUser);
         }
 
         const randomPassword = generateRandomPassword();
@@ -103,13 +112,15 @@ passport.use(
           google_id: null,
           is_verified: true,
           github_access_token: accessToken,
-          github_username: profile.username || null,
-          github_profile_url: profile.profileUrl || null,
-          github_avatar_url: profile.photos?.[0].value || null,
+          github_username: profile?.username || null,
+          github_profile_url: profile?.profileUrl || null,
+          github_connected: true,
+          github_connected_at: new Date(),
+          github_avatar_url: profile?.photos?.[0].value || null,
         };
 
         let existingUser = await User.findByGitHubId(profile.id);
-        console.log(user);
+
         if (!existingUser) {
           const newUser = new User(user);
           existingUser = await newUser.githubSave();
