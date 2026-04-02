@@ -134,7 +134,7 @@ export const googleAuthCallback = (
       console.log("Google OAuth callback user:", user);
       if (!user) {
         return res.redirect(
-          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=user_not_found`,
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&error_description=user_not_found`,
         );
       }
 
@@ -153,7 +153,7 @@ export const googleAuthCallback = (
       } catch {
         console.error("Error during Google OAuth callback:", err);
         return res.redirect(
-          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&errorDescription=server_error`,
+          `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=google_oauth_error&error_description=server_error`,
         );
       }
     },
@@ -172,13 +172,13 @@ export const githubAuthCallback = (
       if (state.type === "login") {
         if (err) {
           return res.redirect(
-            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&error_description=server_error`,
           );
         }
 
         if (!user) {
           return res.redirect(
-            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&error_description=user_not_found`,
           );
         }
 
@@ -197,7 +197,7 @@ export const githubAuthCallback = (
           );
         } catch {
           return res.redirect(
-            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=server_error`,
+            `${config.CLIENT_URL}/oauth-popup-callback.html?token=error&user_id=${null}&error=github_oauth_error&error_description=server_error`,
           );
         }
       }
@@ -205,13 +205,13 @@ export const githubAuthCallback = (
       if (state.type === "connect") {
         if (err) {
           return res.redirect(
-            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=authentication_failed`,
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&error_description=authentication_failed`,
           );
         }
 
         if (!user) {
           return res.redirect(
-            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&errorDescription=user_not_found`,
+            `${config.CLIENT_URL}/github-connect-callback.html?token=error&user_id=${null}&error=github_oauth_error&error_description=user_not_found`,
           );
         }
 
