@@ -13,11 +13,11 @@ const PageNotFound = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">
         {/* Animated 404 */}
         <div className="relative mb-6">
-          <h1 className="text-8xl md:text-9xl  text-gray-900 select-none">
+          <h1 className="text-8xl md:text-9xl font-black text-gray-900 select-none">
             404
           </h1>
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 blur-3xl -z-10"></div>
@@ -40,7 +40,7 @@ const PageNotFound = () => {
           </p>
         </div>
 
-
+       
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">

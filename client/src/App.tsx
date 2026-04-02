@@ -17,17 +17,17 @@ import Import from "./pages/Import";
 import Analytics from "./pages/Analytics";
 import { TaskDetials } from "./pages/TaskDetials";
 import CreateTask from "./pages/CreateTask";
-import Profile from "./pages/Profile";
+import Setting from "./pages/Setting";
 import { Toaster } from "react-hot-toast";
 import Protected from "./hooks/Protected";
 import GuestRoute from "./hooks/GuestRoute";
 import AuthSuccess from "./pages/AuthPage/AuthSuccess";
 import ConnectionFailed from "./pages/AuthPage/ConnectionFailed";
 import GitConnectionProgress from "./pages/AuthPage/GitConnectionProgress";
-import Settings from "./pages/Settings";
-import GithubConnection from "./pages/GithubConnection";
+
 
 function App() {
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
@@ -93,29 +93,14 @@ function App() {
         />
 
         <Route
-          path="profile"
+          path="setting"
           element={
             <Protected>
-              <Profile />
+              <Setting />
             </Protected>
           }
         />
-        <Route
-          path="settings"
-          element={
-            <Protected>
-              <Settings />
-            </Protected>
-          }
-        />
-        <Route
-          path="settings/connect/github"
-          element={
-            <Protected>
-              <GithubConnection />
-            </Protected>
-          }
-        />
+
         <Route
           path="auth/git-connection-progress"
           element={<GitConnectionProgress />}

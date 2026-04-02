@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { LuLoaderCircle } from "react-icons/lu";
 import toast from "react-hot-toast";
 import { notify } from "../../util/notify";
-import { useAuthStore } from "../../store/authstore";
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -30,7 +29,6 @@ const Signup = () => {
     github: false,
     google: false,
   });
-  const { register } = useAuthStore();
   const [error, setError] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -110,17 +108,25 @@ const Signup = () => {
       setLoading(true);
 
       // Replace with your actual API call
-      const payload = {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-        account_role: "user",
-      };
-      const response = await register(payload);
-      if (!response.success) {
-        return;
+      const response = await fetch(`${API_URL}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed. Please try again.");
       }
-      navigate("/login"); // After implementing OTP, redirect to OTP verification page instead (response.url)
+
+      toast.success("Account created successfully!");
+      toast.success("Please log in to continue");
+
+      // Navigate to login after successful signup
+      setTimeout(() => {
+        navigate("/auth/login");
+      }, 1500);
     } catch (err: any) {
       const errorMessage =
         err.message || "An error occurred. Please try again.";
@@ -133,107 +139,108 @@ const Signup = () => {
   };
 
   const handleGitHubSignup = () => {
-    if (oauthLoading.github) return;
-    setOauthLoading((prev) => ({ ...prev, github: true }));
+  if (oauthLoading.github) return;
+  setOauthLoading((prev) => ({ ...prev, github: true }));
 
-    const width = 600;
-    const height = 700;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
+  const width = 600;
+  const height = 700;
+  const left = window.screen.width / 2 - width / 2;
+  const top = window.screen.height / 2 - height / 2;
 
-    // Open the OAuth popup
-    const authWindow = window.open(
-      `${API_URL}/auth/github-auth`,
-      "GitHub Login",
-      `width=${width},height=${height},top=${top},left=${left}`,
-    );
+  // Open the OAuth popup
+  const authWindow = window.open(
+    `${API_URL}/auth/github-auth`,
+    "GitHub Login",
+    `width=${width},height=${height},top=${top},left=${left}`
+  );
 
-    if (!authWindow) {
-      console.error("Failed to open popup");
-      setOauthLoading((prev) => ({ ...prev, github: false }));
-      return;
+  if (!authWindow) {
+    console.error("Failed to open popup");
+    setOauthLoading((prev) => ({ ...prev, github: false }));
+    return;
+  }
+
+  // Cleanup function
+  const cleanup = () => {
+    setOauthLoading((prev) => ({ ...prev, github: false }));
+    clearInterval(popupCheckInterval);
+    window.removeEventListener("message", handleMessage);
+  };
+
+  // Listen for messages from the popup
+  const handleMessage = (event: MessageEvent) => {
+    // Must match the origin of your app
+    if (event.origin !== window.location.origin) return;
+
+    const { success, token, userId } = event.data;
+    console.log("Message from popup:", event.data);
+
+    if (success) {
+      // Show success notification
+      notify.success("Signed up with GitHub successfully!");
+      // Redirect SPA after signup
+      window.location.href = "/dashboard";
     }
 
-    // Cleanup function
-    const cleanup = () => {
-      setOauthLoading((prev) => ({ ...prev, github: false }));
-      clearInterval(popupCheckInterval);
-      window.removeEventListener("message", handleMessage);
-    };
-
-    // Listen for messages from the popup
-    const handleMessage = (event: MessageEvent) => {
-      // Must match the origin of your app
-      if (event.origin !== window.location.origin) return;
-
-      const { success, token, userId } = event.data;
-      console.log("Message from popup:", event.data);
-
-      if (success) {
-        // Show success notification
-        notify.success("Signed up with GitHub successfully!");
-        // Redirect SPA after signup
-        window.location.href = "/dashboard";
-      }
-
-      cleanup();
-    };
-
-    window.addEventListener("message", handleMessage);
-
-    // Check if popup was manually closed
-    const popupCheckInterval = setInterval(() => {
-      if (authWindow.closed) {
-        console.log("Popup closed by user");
-        cleanup();
-      }
-    }, 500);
+    cleanup();
   };
+
+  window.addEventListener("message", handleMessage);
+
+  // Check if popup was manually closed
+  const popupCheckInterval = setInterval(() => {
+    if (authWindow.closed) {
+      console.log("Popup closed by user");
+      cleanup();
+    }
+  }, 500);
+};
+
 
   const handleGoogleSignup = async () => {
     if (oauthLoading.google) return;
 
     setOauthLoading((prev) => ({ ...prev, google: true }));
-    const width = 600;
-    const height = 700;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
+   const width = 600;
+  const height = 700;
+  const left = window.screen.width / 2 - width / 2;
+  const top = window.screen.height / 2 - height / 2;
 
-    const authWindow = window.open(
-      `${API_URL}/auth/google-auth`,
-      "Google Login",
-      `width=${width},height=${height},top=${top},left=${left}`,
-    );
-    if (!authWindow) {
-      console.error("Failed to open popup");
-      setOauthLoading((prev) => ({ ...prev, google: false }));
-      return;
+  const authWindow = window.open(
+    `${API_URL}/auth/google-auth`,
+    "Google Login",
+    `width=${width},height=${height},top=${top},left=${left}`
+  );
+  if (!authWindow) {
+    console.error("Failed to open popup");
+    setOauthLoading((prev) => ({ ...prev, google: false }));
+    return;
+  }
+
+  const cleanup = () => {
+    setOauthLoading((prev) => ({ ...prev, google: false }));
+    clearInterval(popupCheckInterval);
+    window.removeEventListener("message", handleMessage);
+  };
+
+  const handleMessage = (event: MessageEvent) => {
+    if (event.origin !== window.location.origin) return;
+    const { success, token, userId } = event.data;
+    console.log("Message from popup:", event.data);
+    if (success) {
+      notify.success("Logged in with Google successfully!");
+      window.location.href = "/dashboard";
     }
+    cleanup();
+  }
+  window.addEventListener("message", handleMessage);
 
-    const cleanup = () => {
-      setOauthLoading((prev) => ({ ...prev, google: false }));
-      clearInterval(popupCheckInterval);
-      window.removeEventListener("message", handleMessage);
-    };
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      const { success, token, userId } = event.data;
-      console.log("Message from popup:", event.data);
-      if (success) {
-        notify.success("Logged in with Google successfully!");
-        window.location.href = "/dashboard";
-      }
+  const popupCheckInterval = setInterval(() => {
+    if (authWindow.closed) {
+      console.log("Popup closed by user");
       cleanup();
-    };
-    window.addEventListener("message", handleMessage);
-
-    const popupCheckInterval = setInterval(() => {
-      if (authWindow.closed) {
-        console.log("Popup closed by user");
-        cleanup();
-      }
-    }, 500);
+    }
+  }, 500);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -358,7 +365,7 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-5 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-7 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -485,7 +492,7 @@ const Signup = () => {
           <button
             type="button"
             className="text-xs text-blue-600 cursor-pointer font-medium hover:text-blue-700 hover:underline transition-all"
-            onClick={() => navigate("/auth/login")}
+            onClick={() => navigate("/login")}
           >
             Log in
           </button>
