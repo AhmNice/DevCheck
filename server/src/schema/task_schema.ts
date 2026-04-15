@@ -1,20 +1,27 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
 
-export const sanitizeString = (val: unknown) =>
-  typeof val === "string" ? sanitizeHtml(val.trim()) : val;
+export const sanitizeInput = (val: unknown): string | unknown => {
+  if (typeof val !== "string") return val;
+
+  return sanitizeHtml(val.trim(), {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: "recursiveEscape",
+  });
+};
 
 const SubtaskSchema = z.object({
-  title: z.preprocess(sanitizeString, z.string().min(1)),
-  description: z.preprocess(sanitizeString, z.string().optional()),
+  title: z.preprocess(sanitizeInput, z.string().min(1)),
+  description: z.preprocess(sanitizeInput, z.string().optional()),
   due_date: z.string().datetime().optional(),
   status: z.enum(["pending", "in_progress", "completed"]),
 });
 
 export const TaskSchema = z
   .object({
-    title: z.preprocess(sanitizeString, z.string().min(1)),
-    description: z.preprocess(sanitizeString, z.string().optional()),
+    title: z.preprocess(sanitizeInput, z.string().min(1)),
+    description: z.preprocess(sanitizeInput, z.string().optional()),
     due_date: z.string().datetime(),
     project_id: z.string().optional(),
     status: z.enum(["pending", "in_progress", "completed"]),

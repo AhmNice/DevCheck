@@ -7,7 +7,7 @@ type ProtectedProps = {
 };
 
 const Protected = ({ children, requiredRole }: ProtectedProps) => {
-  const { user, loadingUser } = useAuthStore();
+  const { user, loadingUser, isAuthenticated } = useAuthStore();
   const location = useLocation();
 
   //  Wait for auth check
@@ -16,7 +16,7 @@ const Protected = ({ children, requiredRole }: ProtectedProps) => {
   }
 
   // ❌ Not logged in
-  if (!user) {
+  if (!user && !isAuthenticated) {
     return (
       <Navigate
         to="/auth/login"
@@ -31,18 +31,10 @@ const Protected = ({ children, requiredRole }: ProtectedProps) => {
 
   //  Role check (supports multiple roles)
   if (requiredRole) {
-    const roles = Array.isArray(requiredRole)
-      ? requiredRole
-      : [requiredRole];
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
 
-    if (!roles.includes(user.account_role)) {
-      return (
-        <Navigate
-          to="/unauthorized"
-          replace
-          state={{ from: location }}
-        />
-      );
+    if (!roles.includes(user?.account_role)) {
+      return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
   }
 

@@ -17,7 +17,7 @@ import {
   ClipboardList,
   User,
 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, replace, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { APP_VERSION } from "../util/version";
 import { useAuthStore } from "../store/authstore";
@@ -74,7 +74,7 @@ const sidebarData: SidebarItem[] = [
     icon: Settings,
     text: "Settings",
     path: "/settings",
-  }
+  },
 ];
 
 const Sidebar = ({ onCollapseChange }: SidebarProps) => {
@@ -118,8 +118,8 @@ const Sidebar = ({ onCollapseChange }: SidebarProps) => {
   const handleLogOut = async () => {
     try {
       const res = await logoutUser();
-      if(res.success) {
-       return navigate(res.url || "/auth/login");
+      if (res.success) {
+        return navigate(res.url || "/auth/login", { replace: true });
       }
     } catch (error) {
       console.error("Logout failed:", error);

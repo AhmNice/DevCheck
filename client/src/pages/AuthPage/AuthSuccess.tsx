@@ -30,7 +30,7 @@ const getAuthTypeName = (type: keyof typeof authType) => {
 
 const SmallProfile = ({ user }: { user: Partial<UserInterface> }) => {
   return (
-    <div className="flex items-center gap-6 p-4 rounded-md  bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-[-3px_0_0_0_#22c55e_inset]">
+    <div className="flex items-center gap-6 p-4 rounded-md  bg-gray-50 ">
       <img
         src={
           user.github_avatar_url ||
@@ -60,9 +60,9 @@ const FeatureCard = ({
   icon: React.ReactNode;
   text: string;
 }) => (
-  <div className="bg-white dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-slate-700 hover:border-green-200 dark:hover:border-green-400/50 hover:bg-gray-50 dark:hover:bg-slate-800/70 transition-all">
+  <div className="bg-white backdrop-blur-sm p-4 rounded-lg flex items-center gap-3 border border-gray-100  hover:border-green-200 dark:hover:border-green-400/50 hover:bg-gray-50 dark:hover:bg-slate-800/70 transition-all">
     <span className="text-primary text-xl shrink-0">{icon}</span>
-    <span className="font-label text-xs uppercase tracking-wider font-medium text-gray-700 dark:text-slate-100">
+    <span className="font-label text-xs uppercase tracking-wider font-medium text-gray-700 ">
       {text}
     </span>
   </div>
@@ -161,7 +161,7 @@ const AuthSuccess = () => {
 
           <button
             onClick={handleGoToDashboard}
-            className="mt-8 w-full bg-slate-900 dark:bg-slate-800 text-white py-3 px-4 rounded-lg font-medium hover:bg-slate-800 dark:hover:bg-slate-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#4ae176] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900"
+            className="bg-[#135bec] flex items-center gap-2 justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-500/20 mt-4"
           >
             Go to Dashboard
           </button>

@@ -10,7 +10,7 @@ const public_pages = [
   "/",
   "/auth/login",
   "/auth/success",
-  "/auth/register",
+  "/auth/signup",
   "/auth/forgot-password",
   "/auth/verify-otp",
   "/auth/reset-password",

@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum TaskStatus {
+  BACKLOG
+  PLANNED
+  IN_PROGRESS
+  IN_REVIEW
+  SHIPPED
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AccountRole {
+  USER
+  ADMIN
+}
+
+enum AccountType {
+  FREE_TIER
+  PRO
+}
+
+//////////////////////////////////////////////////////
+// USER
+//////////////////////////////////////////////////////
+
+model User {
+  id                     String   @id @default(uuid())
+  name                   String
+  email                  String   @unique
+  password               String
+
+  googleId               String?  @unique
+  githubId               String?  @unique
+  githubUsername         String?
+  githubAvatarUrl        String?
+  githubProfileUrl       String?
+  githubAccessToken      String?
+
+  bio                    String?
+  profilePicture         String?
+  jobTitle               String?
+
+  accountRole            AccountRole @default(USER)
+  accountType            AccountType @default(FREE_TIER)
+
+  isVerified             Boolean @default(false)
+  isSuspended            Boolean @default(false)
+
+  otp                    String?
+  otpExpiry              DateTime?
+
+  resetPasswordToken     String?
+  resetPasswordExpiry    DateTime?
+
+  failedAttempts         Int      @default(0)
+  lockUntil              DateTime?
+
+  githubConnected        Boolean  @default(false)
+  githubConnectedAt      DateTime?
+  syncPersonalRepos      Boolean  @default(false)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // Relations
+  projects               Project[]
+  tasks                  Task[]
+  sessions               SessionToken[]
+  githubRepositories     GithubRepository[]
+}
+
+//////////////////////////////////////////////////////
+// SESSION TOKENS
+//////////////////////////////////////////////////////
+
+model SessionToken {
+  refreshToken String   @id
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+//////////////////////////////////////////////////////
+// PROJECT
+//////////////////////////////////////////////////////
+
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  deadline    DateTime?
+
+  archived    Boolean  @default(false)
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tasks       Task[]
+}
+
+//////////////////////////////////////////////////////
+// TASK
+//////////////////////////////////////////////////////
+
+model Task {
+  id            String       @id @default(uuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId     String?
+  project       Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+
+  status        TaskStatus   @default(BACKLOG)
+  priority      TaskPriority @default(MEDIUM)
+
+  dueDate       DateTime?
+
+  // Execution-focused fields
+  startedAt     DateTime?
+  shippedAt     DateTime?
+  blockedReason String?
+  lastActiveAt  DateTime?
+
+  // Integration (GitHub, etc.)
+  source        String?
+  sourceId      String?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  subtasks      Subtask[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+}
+
+//////////////////////////////////////////////////////
+// SUBTASK
+//////////////////////////////////////////////////////
+
+model Subtask {
+  id          String       @id @default(uuid())
+  taskId      String
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+
+  status      TaskStatus   @default(BACKLOG)
+  dueDate     DateTime?
+
+  completedAt DateTime?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([taskId])
+}
+
+//////////////////////////////////////////////////////
+// GITHUB REPOSITORY
+//////////////////////////////////////////////////////
+
+model GithubRepository {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  githubRepoId    BigInt   @unique
+  owner           String
+  name            String
+  fullName        String
+
+  defaultBranch   String?
+  visibility      String?
+  repoUrl         String?
+
+  connectedAt     DateTime @default(now())
+  lastSyncedAt    DateTime?
+  active          Boolean  @default(true)
+
+  @@index([userId])
+}
