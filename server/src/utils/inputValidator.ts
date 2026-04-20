@@ -83,12 +83,12 @@ export const validationResultHandler = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new BadRequestError(
-      errors
+    throw new BadRequestError({
+      message: errors
         .array()
         .map((err) => err.msg)
         .join(", "),
-    );
+    });
   }
   next();
 };

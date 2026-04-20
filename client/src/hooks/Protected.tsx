@@ -32,8 +32,9 @@ const Protected = ({ children, requiredRole }: ProtectedProps) => {
   //  Role check (supports multiple roles)
   if (requiredRole) {
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    const accountRole = user?.account_role;
 
-    if (!roles.includes(user?.account_role)) {
+    if (!accountRole || !roles.includes(accountRole)) {
       return <Navigate to="/unauthorized" replace state={{ from: location }} />;
     }
   }

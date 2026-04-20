@@ -13,19 +13,17 @@ import { singleUpload } from "../middleware/file_uploader.js";
 import {
   validateId,
   validateSubtaskInput,
-  validateTaskInput,
   validationResultHandler,
 } from "../utils/inputValidator.js";
 import { verifySession } from "../middleware/verifysession.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { TaskSchema } from "../validation/task_schema.js";
+import { protectedRoute } from "../utils/protection.js";
 
 const taskRouter = express.Router();
 
-taskRouter.post(
-  "/create",
-  validateTaskInput,
-  validationResultHandler,
-  createTask,
-);
+taskRouter.use(verifySession, protectedRoute(["USER"]));
+taskRouter.post("/create", validate(TaskSchema), createTask);
 taskRouter.post(
   "/:task_id/subtasks",
   validateSubtaskInput,
@@ -37,29 +35,25 @@ taskRouter.get(
   "/get/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   getTaskWithSubtasks,
 );
 taskRouter.get(
   "/user/:user_id",
   validateId("user_id"),
   validationResultHandler,
-  verifySession,
   getTasksByUserId,
 );
 taskRouter.delete(
   "/delete/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   deleteTask,
 );
-taskRouter.delete("/delete/subtask/:subtask_id", verifySession, deleteSubtask);
+taskRouter.delete("/delete/subtask/:subtask_id", deleteSubtask);
 taskRouter.put(
   "/update/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   updateTask,
 );
 

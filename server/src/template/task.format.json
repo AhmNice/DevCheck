@@ -1,29 +1,41 @@
 [
   {
-  "title": "Task title",
-  "description": "Optional task description",
-  "due_date": "2025-10-20T23:59:59Z",
-  "status": "pending",
-  "priority": "normal",
-  "subtasks": [
-    {
-      "title": "Subtask 1 title",
-      "description": "Optional task description",
-      "due_date": "2025-10-18T23:59:59Z",
-      "status": "pending"
+    "title": "Task title",
+    "description": "Optional task description",
+    "due_date": "2026-04-20T23:59:59Z",
+    "status": "PLANNED",
+    "priority": "MEDIUM",
+    "tags": ["backend", "auth"],
+    "attachments": [
+      {
+        "name": "api-docs.pdf",
+        "url": "https://example.com/file.pdf"
+      }
+    ],
+    "subtasks": [
+      {
+        "title": "Subtask 1 title",
+        "description": "Optional subtask description",
+        "due_date": "2026-04-18T23:59:59Z",
+        "status": "PLANNED"
+      },
+      {
+        "title": "Subtask 2 title",
+        "description": "Optional subtask description",
+        "due_date": "2026-04-19T23:59:59Z",
+        "status": "IN_PROGRESS"
+      },
+      {
+        "title": "Subtask 3 title",
+        "description": "Optional subtask description",
+        "due_date": "2026-04-20T23:59:59Z",
+        "status": "SHIPPED"
+      }
+    ],
+    "metadata": {
+      "source": "manual",
+      "import_id": null
     },
-    {
-      "title": "Subtask 2 title",
-      "description": "Optional task description",
-      "due_date": "2025-10-19T23:59:59Z",
-      "status": "in_progress"
-    },
-    {
-      "title": "Subtask 3 title",
-      "description": "Optional task description",
-      "due_date": "2025-10-20T23:59:59Z",
-      "status": "completed"
-    }
-  ]
-}
+    "created_at": "2026-04-15T10:00:00Z"
+  }
 ]

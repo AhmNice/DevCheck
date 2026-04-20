@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as googleStrategy, Profile } from "passport-google-oauth20";
 import { BadRequestError } from "../utils/errorHandler.js";
-import { User } from "../model/User.js";
+import { User } from "../service/User.service.js";
 import UserInterface from "../interface/user.interface.js";
 import { generateRandomPassword } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
@@ -29,7 +29,9 @@ passport.use(
         const email = profile.emails?.[0].value;
         if (!email) {
           return done(
-            new BadRequestError("Google account does not have an email"),
+            new BadRequestError({
+              message: "Google account does not have an email.",
+            }),
           );
         }
         const randomPassword = generateRandomPassword();
@@ -41,7 +43,7 @@ passport.use(
           email: email,
           profile_picture: profile.photos?.[0].value || "",
           password: passwordHash,
-          account_role: "user",
+          account_role: "USER",
           github_id: null,
         };
         let userExists = await User.findByGoogleId(profile.id);

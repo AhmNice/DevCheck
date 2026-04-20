@@ -7,10 +7,19 @@ export interface TaskInterface {
   source?: string;
   source_id?: string;
   due_date: Date;
-  status: "pending" | "in_progress" | "completed";
-  priority: "normal" | "medium" | "high";
+  status:
+    | "BACKLOG"
+    | "PLANNED"
+    | "IN_PROGRESS"
+    | "IN_REVIEW"
+    | "SHIPPED"
+    | "BLOCKED"
+    | "COMPLETED"
+    | "SHIPPED";
+  priority: "LOW" | "MEDIUM" | "HIGH";
   created_at: Date;
   updated_at: Date;
+  subtasks?: SubtaskInterface[];
 }
 
 export interface SubtaskInterface {
@@ -19,7 +28,33 @@ export interface SubtaskInterface {
   title?: string;
   description?: string;
   due_date: Date;
-  status: "pending" | "in_progress" | "completed";
+  status:
+    | "BACKLOG"
+    | "PLANNED"
+    | "IN_PROGRESS"
+    | "IN_REVIEW"
+    | "SHIPPED"
+    | "BLOCKED"
+    | "COMPLETED";
   created_at: Date;
   updated_at: Date;
+}
+
+export interface taskUpdateInterface {
+  title?: string;
+  description?: string;
+  due_date?: Date;
+  status?:
+    | "BACKLOG"
+    | "PLANNED"
+    | "IN_PROGRESS"
+    | "IN_REVIEW"
+    | "SHIPPED"
+    | "BLOCKED"
+    | "COMPLETED";
+  priority?: "LOW" | "MEDIUM" | "HIGH";
+  project_id?: string | null;
+  subtasks?: Partial<SubtaskInterface[]>;
+  source?: string;
+  source_id?: string;
 }

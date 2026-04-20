@@ -22,7 +22,7 @@ import passport from "passport";
 import { rateLimiter } from "../utils/rateLimiter.js";
 import { verifySession } from "../middleware/verifysession.js";
 import { validateRequest } from "../middleware/validate.js";
-import { userUpdateSchema } from "../schema/user.js";
+import { userUpdateSchema } from "../validation/user.js";
 import { connectGitHub, githubLogin } from "../github/github_auth.js";
 
 authRouter.post(

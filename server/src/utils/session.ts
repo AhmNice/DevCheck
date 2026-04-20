@@ -40,7 +40,7 @@ export const verifySession = (
 ) => {
   const token = req.cookies[`${config.SESSION_COOKIE_NAME_ACCESS}`];
   if (!token) {
-    throw new UnauthorizedError("No session token provided");
+    throw new UnauthorizedError({ message: "No session token provided" });
   }
   try {
     const decoded = jwt.verify(
@@ -50,6 +50,6 @@ export const verifySession = (
     req.user = decoded;
     next();
   } catch {
-    throw new UnauthorizedError("Invalid session token");
+    throw new UnauthorizedError({ message: "Invalid session token" });
   }
 };

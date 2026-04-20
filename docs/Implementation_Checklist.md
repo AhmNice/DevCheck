@@ -4,11 +4,11 @@
 
 ### Auth & Security Hardening
 
-- [ ] Registration flow works (validation + error handling)
-- [ ] Login flow stable (JWT/session consistency)
-- [ ] OTP verification implemented and tested
+- [x] Registration flow works (validation + error handling)
+- [x] Login flow stable (JWT/session consistency)
+- [x] OTP verification implemented and tested
 - [ ] Password reset flow functional
-- [ ] Session expiration handled correctly
+- [x] Session expiration handled correctly
 - [ ] Protected routes enforced on backend
 
 ### Backend Stability
@@ -20,10 +20,10 @@
 
 ### Database Setup
 
-- [ ] PostgreSQL connection stable
-- [ ] Prisma schema finalized and synced
-- [ ] Migration scripts tested in dev/staging
-- [ ] `prisma migrate reset` works without inconsistencies
+- [x] PostgreSQL connection stable
+- [x] Prisma schema finalized and synced
+- [x] Migration scripts tested in dev/staging
+- [x] `prisma migrate reset` works without inconsistencies
 - [ ] Seed data script created (optional)
 
 ### Documentation & Setup

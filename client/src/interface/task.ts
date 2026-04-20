@@ -1,4 +1,11 @@
-export type TaskStatus = "pending" | "in_progress" | "completed" | "overdue";
+export type TaskStatus =
+  | "BACKLOG"
+  | "PLANNED"
+  | "IN_PROGRESS"
+  | "IN_REVIEW"
+  | "SHIPPED"
+  | "BLOCKED"
+  | "COMPLETED";
 
 export interface Subtask {
   _id: string; // UUID
@@ -21,20 +28,23 @@ export interface Task {
   status: TaskStatus;
   completed_subtasks: number;
   total_subtasks: number;
-  priority: "low" | "normal" | "high";
-  created_by: string;
+  priority: " LOW" | "MEDIUM" | "HIGH";
+  created_by: {
+    email: string;
+    name: string;
+  };
   created_at: string;
   updated_at: string;
   subtasks: Subtask[];
 }
 export interface TaskSummaryItem {
-  status_group: "pending" | "in_progress" | "completed" | "overdue";
+  status_group: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
   count: string;
 }
 
 export interface WeeklySummaryItem {
   week_start: string; // ISO date string
-  status_group: "pending" | "in_progress" | "completed" | "overdue";
+  status_group: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
   count: string;
 }
 

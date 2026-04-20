@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { sanitizeInput, TasksFileSchema } from "./task_schema.js";
 
-export const ProjectSchema = z
+export const BaseProjectSchema = z
   .object({
-    user_id: z.string().uuid().optional(),
+    user_id: z.preprocess(sanitizeInput, z.string().uuid()).optional(),
     name: z.preprocess(sanitizeInput, z.string().min(1)),
     description: z.preprocess(sanitizeInput, z.string().optional()),
-    deadline: z.string().datetime().optional(),
+    deadline: z.preprocess(sanitizeInput, z.string().datetime()).optional(),
     tasks: TasksFileSchema.optional().default([]),
   })
   .refine(
@@ -29,3 +29,6 @@ export const ProjectSchema = z
       message: "Task or subtask due date cannot exceed project deadline",
     },
   );
+export const ProjectSchema = z.object({
+  body: BaseProjectSchema,
+});

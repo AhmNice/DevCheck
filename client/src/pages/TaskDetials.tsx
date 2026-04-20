@@ -37,7 +37,7 @@ export const TaskDetials = () => {
     setSubTasks((prevSubtasks) =>
       prevSubtasks.map((subtask) =>
         subtask._id === id
-          ? { ...subtask, status: completed ? "completed" : "pending" }
+          ? { ...subtask, status: completed ? "COMPLETED" : "PLANNED" }
           : subtask,
       ),
     );
@@ -54,7 +54,7 @@ export const TaskDetials = () => {
         title: subtaskInput,
         completed: false,
         due_date: new Date().toISOString(),
-        status: "pending",
+        status: "PLANNED",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -69,7 +69,7 @@ export const TaskDetials = () => {
   };
 
   const completedTaskCount = subTasks.filter(
-    (task) => task.status === "completed",
+    (task) => task.status === "COMPLETED",
   ).length;
   const progressPercentage =
     subTasks.length > 0 ? (completedTaskCount / subTasks.length) * 100 : 0;
@@ -136,10 +136,16 @@ export const TaskDetials = () => {
             <div className="flex flex-col md:flex-row justify-between items-start gap-3">
               <div className="flex-1">
                 <h1 className="text-gray-900 text-2xl font-bold leading-tight tracking-tight mb-1">
-                  {title || taskData?.title || "Implement OAuth2 Authentication Flow"}
+                  {title ||
+                    taskData?.title ||
+                    "Implement OAuth2 Authentication Flow"}
                 </h1>
                 <p className="text-gray-500 text-xs flex items-center gap-1.5">
-                  <User size={12} /> Created by {taskData?.created_by || "Alex Chen"} • Updated {taskData?.updated_at ? formatDate(taskData.updated_at) : "2 hours ago"}
+                  <User size={12} /> Created by{" "}
+                  {taskData?.created_by?.name || "Alex Chen"} • Updated{" "}
+                  {taskData?.updated_at
+                    ? formatDate(taskData.updated_at)
+                    : "2 hours ago"}
                 </p>
               </div>
               <div className="flex gap-1.5">
@@ -191,7 +197,13 @@ export const TaskDetials = () => {
               <h3 className="text-gray-900 text-base font-semibold mb-3 flex items-center gap-1.5">
                 Description
               </h3>
-              <MarkdownRenderer content={description || taskData?.description || "No description provided for this task."} />
+              <MarkdownRenderer
+                content={
+                  description ||
+                  taskData?.description ||
+                  "No description provided for this task."
+                }
+              />
             </section>
 
             {/* Subtasks Checklist Section */}
@@ -286,7 +298,9 @@ export const TaskDetials = () => {
                   </label>
                   <div className="flex items-center gap-1.5 text-gray-900 text-xs font-semibold">
                     <Calendar size={12} className="text-gray-400" />{" "}
-                    {taskData?.due_date ? formatDate(taskData.due_date) : endDate || "Oct 24, 2024"}
+                    {taskData?.due_date
+                      ? formatDate(taskData.due_date)
+                      : endDate || "Oct 24, 2024"}
                   </div>
                 </div>
               </div>

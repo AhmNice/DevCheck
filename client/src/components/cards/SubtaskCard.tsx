@@ -19,13 +19,13 @@ const SubtaskCard = ({
     >
       <input
         type="checkbox"
-        checked={todo.status === "completed"}
+        checked={todo.status === "COMPLETED"}
         onChange={(e) => todo._id && onCompletedChange(todo._id, e.target.checked)}
         className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 focus:ring-offset-0 transition-colors cursor-pointer"
       />
       <span
         className={`text-xs flex-1 transition-all ${
-          todo.status === "completed"
+          todo.status === "COMPLETED"
             ? "text-gray-400 line-through"
             : "text-gray-700 font-medium"
         }`}

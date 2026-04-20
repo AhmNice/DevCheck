@@ -9,7 +9,6 @@ import type { Subtask, Task } from "../interface/task";
 import { useTaskStore } from "../store/taskStore";
 import { useAuthStore } from "../store/authstore";
 
-
 interface createTaskProps {
   setModel: (model: boolean) => void;
   onTaskCreate?: (task: taskProps) => void;
@@ -34,7 +33,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
   // Form state
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const [priority, setPriority] = useState("medium");
+  const [priority, setPriority] = useState("MEDIUM");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const { user } = useAuthStore();
@@ -48,7 +47,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           _id: `${Date.now()}`,
           task_id: "",
           title: newSubtask.trim(),
-          status: "pending",
+          status: "PLANNED",
         },
       ]);
       setNewSubtask("");
@@ -61,7 +60,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
         subtask._id === id
           ? {
               ...subtask,
-              status: subtask.status === "completed" ? "pending" : "completed",
+              status: subtask.status === "COMPLETED" ? "PLANNED" : "COMPLETED",
             }
           : subtask,
       ),
@@ -108,11 +107,11 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
   const getPriorityTag = (priority: string): string => {
     switch (priority) {
       case "urgent":
-      case "high":
+      case "HIGH":
         return "HIGH PRIORITY";
-      case "medium":
+      case "MEDIUM":
         return "MEDIUM PRIORITY";
-      case "low":
+      case "LOW":
         return "LOW PRIORITY";
       default:
         return "MEDIUM PRIORITY";
@@ -139,7 +138,7 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
 
     try {
       // Calculate completion percentage from subtasks
-      const completedCount = subtasks.filter((s) => s.status).length;
+      const completedCount = subtasks.filter((s) => s.status === "COMPLETED").length;
       const percentage =
         subtasks.length > 0
           ? Math.round((completedCount / subtasks.length) * 100)
@@ -147,10 +146,10 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
 
       const newTask: Partial<Task> = {
         _id: `${Date.now()}`,
-        priority: (priority === "urgent" ? "high" : priority) as
-          | "low"
-          | "normal"
-          | "high",
+        priority: (priority === "urgent" ? "HIGH" : priority) as
+          | " LOW"
+          | "MEDIUM"
+          | "HIGH",
         title: taskTitle.trim(),
         description: taskDescription.trim() || undefined,
         created_at: formatDateForTask(new Date()), // Today as start date
@@ -159,26 +158,30 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
             ? formatDateForTask(date)
             : formatDateForTask(new Date()),
         subtasks: subtasks as Subtask[],
+        status: "PLANNED"
       };
-      console.log(newTask.status)
+      console.log(newTask.status);
       // Simulate API call
       try {
-      const isoDate = date instanceof Date ? date.toISOString() : new Date().toISOString();
-      const newTaskWithISODate = {
-        ...newTask,
-        user_id: user?._id,
-        status: 'pending',
-        due_date: isoDate,
-      };
-      const res = await createTask(newTaskWithISODate as Omit<Task, "_id" | "created_at" | "updated_at">);
-      if(!res.success){
-        setModel(true);
-        return;
+        const isoDate =
+          date instanceof Date ? date.toISOString() : new Date().toISOString();
+        const newTaskWithISODate = {
+          ...newTask,
+          user_id: user?._id,
+          status: "PLANNED",
+          due_date: isoDate,
+        };
+        const res = await createTask(
+          newTaskWithISODate as Omit<Task, "_id" | "created_at" | "updated_at">,
+        );
+        if (!res.success) {
+          setModel(true);
+          return;
+        }
+        setModel(false);
+      } catch (error) {
+        console.error("Error creating task:", error);
       }
-      setModel(false);
-    } catch (error) {
-      console.error("Error creating task:", error);
-    }
       // Close modal
       setModel(false);
     } catch (error) {
@@ -264,10 +267,10 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
                   className="appearance-none w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSaving}
                 >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                  <option value="urgent">Urgent</option>
+                  <option value="LOW">Low Priority</option>
+                  <option value="MEDIUM">Medium Priority</option>
+                  <option value="HIGH">High Priority</option>
+                  <option value="URGENT">Urgent</option>
                 </select>
               </div>
             </div>
@@ -321,16 +324,18 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           </div>
 
           {/* Description Field */}
-          <div className="space-y-1.5 "data-color-mode="light">
+          <div className="space-y-1.5 " data-color-mode="light">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center justify-between">
               Description
               <span className="text-[10px] normal-case bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
                 Markdown Supported
               </span>
             </label>
-           <MDEditor
+            <MDEditor
               value={taskDescription}
-              onChange={(value: string | undefined) => setTaskDescription(value || "")}
+              onChange={(value: string | undefined) =>
+                setTaskDescription(value || "")
+              }
               height={100}
               preview="edit"
               textareaProps={{
@@ -343,7 +348,9 @@ const CreateTask = ({ setModel, onTaskCreate }: createTaskProps) => {
           {/* Subtasks Section */}
           <div className="space-y-3">
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Subtasks ({subtasks.filter((s) => s.status !== "completed").length} remaining)
+              Subtasks (
+              {subtasks.filter((s) => s.status !== "COMPLETED").length}{" "}
+              remaining)
             </label>
             <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
               {/* Subtask Items */}

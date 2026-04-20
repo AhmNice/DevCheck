@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
 //////////////////////////////////////////////////////
 // ENUMS
 //////////////////////////////////////////////////////
@@ -17,6 +18,7 @@ enum TaskStatus {
   IN_REVIEW
   SHIPPED
   BLOCKED
+  COMPLETED
 }
 
 enum TaskPriority {
@@ -40,49 +42,50 @@ enum AccountType {
 //////////////////////////////////////////////////////
 
 model User {
-  id                     String   @id @default(uuid())
-  name                   String
-  email                  String   @unique
-  password               String
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
 
-  googleId               String?  @unique
-  githubId               String?  @unique
-  githubUsername         String?
-  githubAvatarUrl        String?
-  githubProfileUrl       String?
-  githubAccessToken      String?
+  googleId          String? @unique
+  githubId          String? @unique
+  githubUsername    String?
+  githubAvatarUrl   String?
+  githubProfileUrl  String?
+  githubAccessToken String?
 
-  bio                    String?
-  profilePicture         String?
-  jobTitle               String?
+  bio            String?
+  profilePicture String?
+  jobTitle       String?
 
-  accountRole            AccountRole @default(USER)
-  accountType            AccountType @default(FREE_TIER)
+  accountRole AccountRole @default(USER)
+  accountType AccountType @default(FREE_TIER)
 
-  isVerified             Boolean @default(false)
-  isSuspended            Boolean @default(false)
+  isVerified  Boolean @default(false)
+  isSuspended Boolean @default(false)
 
-  otp                    String?
-  otpExpiry              DateTime?
+  otp       String?
+  otpExpiry DateTime?
 
-  resetPasswordToken     String?
-  resetPasswordExpiry    DateTime?
+  resetPasswordToken  String?
+  resetPasswordExpiry DateTime?
 
-  failedAttempts         Int      @default(0)
-  lockUntil              DateTime?
+  failedAttempts Int       @default(0)
+  lockUntil      DateTime?
 
-  githubConnected        Boolean  @default(false)
-  githubConnectedAt      DateTime?
-  syncPersonalRepos      Boolean  @default(false)
+  githubConnected   Boolean   @default(false)
+  githubConnectedAt DateTime?
+  syncPersonalRepos Boolean   @default(false)
 
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  projects               Project[]
-  tasks                  Task[]
-  sessions               SessionToken[]
-  githubRepositories     GithubRepository[]
+  projects           Project[]
+  tasks              Task[]
+  sessions           SessionToken[]
+  githubRepositories GithubRepository[]
+  preference         UserSettings[]
 }
 
 //////////////////////////////////////////////////////
@@ -90,12 +93,12 @@ model User {
 //////////////////////////////////////////////////////
 
 model SessionToken {
-  refreshToken String   @id
+  refreshToken String @id
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 //////////////////////////////////////////////////////
@@ -103,23 +106,23 @@ model SessionToken {
 //////////////////////////////////////////////////////
 
 model Project {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name        String
   description String?
   deadline    DateTime?
 
-  archived    Boolean  @default(false)
-  deleted     Boolean  @default(false)
-  deletedAt   DateTime?
+  archived  Boolean   @default(false)
+  deleted   Boolean   @default(false)
+  deletedAt DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  tasks       Task[]
+  tasks Task[]
 }
 
 //////////////////////////////////////////////////////
@@ -127,20 +130,20 @@ model Project {
 //////////////////////////////////////////////////////
 
 model Task {
-  id            String       @id @default(uuid())
-  userId        String
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  projectId     String?
-  project       Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  title         String
-  description   String?
+  title       String
+  description String?
 
-  status        TaskStatus   @default(BACKLOG)
-  priority      TaskPriority @default(MEDIUM)
+  status   TaskStatus   @default(BACKLOG)
+  priority TaskPriority @default(MEDIUM)
 
-  dueDate       DateTime?
+  dueDate DateTime?
 
   // Execution-focused fields
   startedAt     DateTime?
@@ -149,14 +152,14 @@ model Task {
   lastActiveAt  DateTime?
 
   // Integration (GitHub, etc.)
-  source        String?
-  sourceId      String?
+  source   String?
+  sourceId String?
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  subtasks      Subtask[]
+  subtasks Subtask[]
 
   @@index([userId])
   @@index([projectId])
@@ -168,20 +171,20 @@ model Task {
 //////////////////////////////////////////////////////
 
 model Subtask {
-  id          String       @id @default(uuid())
-  taskId      String
-  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   title       String
   description String?
 
-  status      TaskStatus   @default(BACKLOG)
-  dueDate     DateTime?
+  status  TaskStatus @default(BACKLOG)
+  dueDate DateTime?
 
   completedAt DateTime?
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([taskId])
 }
@@ -191,22 +194,42 @@ model Subtask {
 //////////////////////////////////////////////////////
 
 model GithubRepository {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  githubRepoId    BigInt   @unique
-  owner           String
-  name            String
-  fullName        String
+  githubRepoId BigInt @unique
+  owner        String
+  name         String
+  fullName     String
 
-  defaultBranch   String?
-  visibility      String?
-  repoUrl         String?
+  defaultBranch String?
+  visibility    String?
+  repoUrl       String?
 
-  connectedAt     DateTime @default(now())
-  lastSyncedAt    DateTime?
-  active          Boolean  @default(true)
+  connectedAt  DateTime  @default(now())
+  lastSyncedAt DateTime?
+  active       Boolean   @default(true)
 
   @@index([userId])
+}
+
+// USER SETTINGS
+model UserSettings {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Execution
+  maxActiveTasks Int @default(2)
+
+  // Notifications
+  emailNotificationsEnabled Boolean @default(true)
+  reminderEmailsEnabled     Boolean @default(true)
+
+  // Future-ready
+  weeklySummaryEnabled Boolean @default(true)
+  timezone             String  @default("UTC")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
