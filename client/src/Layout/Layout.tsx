@@ -12,8 +12,11 @@ const Layout = () => {
       if (location.pathname === "/") {
         return "Welcome to DevCheck";
       }
+      const upperPath = path
+        ? path.charAt(0).toUpperCase() + path.slice(1)
+        : "";
 
-      return path ? `${baseTitle} - ${path}` : baseTitle;
+      return path ? `${baseTitle} - ${upperPath}` : baseTitle;
     };
 
     document.title = getPageTitle();

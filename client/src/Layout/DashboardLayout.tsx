@@ -1,4 +1,4 @@
-import { Bell, Settings, Search, Menu } from "lucide-react";
+import { Bell, Settings, Search, Menu, ArrowLeft } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import type { PropsWithChildren } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -12,6 +12,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
   const { user } = useAuthStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const handleBack = () => {
+    navigate(-1);
+  };
+  const path = location.pathname.split("/").filter((seg)=> seg !=="");
 
   // Generate breadcrumbs based on current path
   const getBreadcrumbs = () => {
@@ -54,15 +58,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const breadcrumbs = getBreadcrumbs();
   const account_type =
-  user?.account_type
-    ?.replace(/_/g, " ")
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ") || "Free Tier";
-    const jobTitle = user?.jobTitle?.replace(/_/g, " ")
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ") || "Not specified";
+    user?.account_type
+      ?.replace(/_/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ") || "Free Tier";
+  const jobTitle =
+    user?.jobTitle
+      ?.replace(/_/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ") || "Not specified";
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
       <Sidebar onCollapseChange={setIsSidebarCollapsed} />
@@ -90,9 +96,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <h3 className="font-semibold text-gray-800 w-60 text-wrap truncate">
                   Welcome back, {user?.name || "user"}
                 </h3>
-                <p className="text-xs text-gray-500 md:hidden">
-                  {jobTitle}
-                </p>
+                <p className="text-xs text-gray-500 md:hidden">{jobTitle}</p>
               </div>
 
               <span className="hidden md:inline-block px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-full border border-blue-100">
@@ -141,7 +145,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
 
           {/* Desktop Breadcrumbs */}
-          <div className="hidden md:block px-6 py-2 border-t border-gray-100 bg-gray-50/50">
+          <div className="hidden md:flex gap-4 px-6 py-2 border-t border-gray-100 bg-gray-50/50">
+            {path[0].toLocaleLowerCase() !== "dashboard" && (
+              <ArrowLeft
+                onClick={() => {
+                  handleBack();
+                }}
+                className="cursor-pointer h-4 w-4"
+              />
+            )}
             <div className="flex items-center gap-2 text-xs">
               <span className="text-gray-400">Pages</span>
               <span className="text-gray-300">/</span>

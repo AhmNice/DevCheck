@@ -1,65 +1,59 @@
 import express from "express";
 import {
+  changeStatus,
   createTask,
-  deleteSubtask,
   deleteTask,
   getTasksByUserId,
   getTaskWithSubtasks,
-  saveSubtask,
   updateTask,
+  uploadJsonTaskFile,
 } from "../controllers/task.controller.js";
-import { jsonTaskHandler } from "../utils/json_task_handler.js";
 import { singleUpload } from "../middleware/file_uploader.js";
 import {
   validateId,
-  validateSubtaskInput,
-  validateTaskInput,
   validationResultHandler,
 } from "../utils/inputValidator.js";
 import { verifySession } from "../middleware/verifysession.js";
+import {
+  sanitizeBodyMiddleware,
+  validate,
+} from "../middleware/validate.middleware.js";
+import { TaskSchema, updateStatusSchema } from "../validation/task_schema.js";
+import { protectedRoute } from "../utils/protection.js";
 
 const taskRouter = express.Router();
 
-taskRouter.post(
-  "/create",
-  validateTaskInput,
-  validationResultHandler,
-  createTask,
-);
-taskRouter.post(
-  "/:task_id/subtasks",
-  validateSubtaskInput,
-  validationResultHandler,
-  saveSubtask,
-);
-taskRouter.post("/import", singleUpload, jsonTaskHandler);
+taskRouter.use(verifySession, protectedRoute(["USER"]), sanitizeBodyMiddleware);
+
+taskRouter.post("/create", validate(TaskSchema), createTask);
+taskRouter.post("/import", singleUpload, uploadJsonTaskFile);
 taskRouter.get(
   "/get/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   getTaskWithSubtasks,
 );
 taskRouter.get(
   "/user/:user_id",
   validateId("user_id"),
   validationResultHandler,
-  verifySession,
   getTasksByUserId,
 );
 taskRouter.delete(
   "/delete/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   deleteTask,
 );
-taskRouter.delete("/delete/subtask/:subtask_id", verifySession, deleteSubtask);
+taskRouter.put(
+  "/transition/:task_id",
+  validate(updateStatusSchema),
+  changeStatus,
+);
 taskRouter.put(
   "/update/:task_id",
   validateId("task_id"),
   validationResultHandler,
-  verifySession,
   updateTask,
 );
 

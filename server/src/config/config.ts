@@ -9,7 +9,7 @@ interface Config {
   NODE_ENV: string;
   JWT_SECRET: string;
   JWT_EXPIRES_IN: SignOptions["expiresIn"];
-  DB_URL: string;
+  DATABASE_URL: string;
   DB_HOST: string;
   DB_PORT: number;
   DB_NAME: string;
@@ -39,7 +39,7 @@ const config: Config = {
   JWT_SECRET: process.env.JWT_SECRET || "supersecret",
   JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN ||
     "7d") as SignOptions["expiresIn"],
-  DB_URL: process.env.DB_URL!,
+  DATABASE_URL: process.env.DATABASE_URL!,
   DB_HOST: process.env.DB_HOST!,
   DB_PORT: Number(process.env.DB_PORT)!,
   DB_NAME: process.env.DB_NAME!,

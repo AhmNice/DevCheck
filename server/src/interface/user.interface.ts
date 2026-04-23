@@ -12,7 +12,7 @@ export default interface UserInterface {
   password: string | null;
   bio: string;
   profile_picture: string;
-  account_role: "user" | "admin";
+  account_role: "USER" | "ADMIN";
   otp?: string | null;
   otp_expiry?: Date | null;
   is_verified?: boolean;

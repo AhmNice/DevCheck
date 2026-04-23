@@ -1,18 +1,20 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/requestHandler.js";
 import { BadRequestError } from "../utils/errorHandler.js";
-import { Project } from "../model/Project.js";
+import { Project } from "../service/Project.service.js";
 import { pool } from "../config/db.config.js";
 
 export const createProject = asyncHandler(
   async (req: Request, res: Response) => {
     const { user_id, name, description, deadline } = req.body;
     if (!user_id || !name) {
-      throw new BadRequestError("Missing required fields: user_id and name");
+      throw new BadRequestError({
+        message: "Missing required fields: user_id and name",
+      });
     }
     const parsedDeadline = deadline ? new Date(deadline) : undefined;
     if (deadline && isNaN(parsedDeadline!.getTime())) {
-      throw new BadRequestError("Invalid deadline format");
+      throw new BadRequestError({ message: "Invalid deadline format" });
     }
 
     const project = new Project({
@@ -34,7 +36,7 @@ export const getProjectById = asyncHandler(
     const { project_id } = req.params;
     const project = await Project.findById(`${project_id}`);
     if (!project) {
-      throw new BadRequestError("Project not found");
+      throw new BadRequestError({ message: "Project not found" });
     }
     return res.status(200).json({
       success: true,
@@ -66,7 +68,7 @@ export const archiveProject = asyncHandler(
     try {
       const project = await Project.findById(`${project_id}`);
       if (!project) {
-        throw new BadRequestError("Project not found");
+        throw new BadRequestError({ message: "Project not found" });
       }
       const updatedProject = await Project.archive(client, `${project_id}`);
       return res.status(200).json({
@@ -86,7 +88,7 @@ export const unarchiveProject = asyncHandler(
     try {
       const project = await Project.findById(`${project_id}`);
       if (!project) {
-        throw new BadRequestError("Project not found");
+        throw new BadRequestError({ message: "Project not found" });
       }
       const updatedProject = await Project.unarchive(client, `${project_id}`);
       return res.status(200).json({
@@ -106,7 +108,7 @@ export const deleteProject = asyncHandler(
     try {
       const project = await Project.findById(`${project_id}`);
       if (!project) {
-        throw new BadRequestError("Project not found");
+        throw new BadRequestError({ message: "Project not found" });
       }
       await Project.delete(client, `${project_id}`);
       return res.status(200).json({
@@ -125,7 +127,7 @@ export const restoreProject = asyncHandler(
     try {
       const project = await Project.findById(`${project_id}`);
       if (!project) {
-        throw new BadRequestError("Project not found");
+        throw new BadRequestError({ message: "Project not found" });
       }
       const updatedProject = await Project.restore(client, `${project_id}`);
       return res.status(200).json({
@@ -145,7 +147,7 @@ export const destroyProject = asyncHandler(
     try {
       const project = await Project.findById(`${project_id}`);
       if (!project) {
-        throw new BadRequestError("Project not found");
+        throw new BadRequestError({ message: "Project not found" });
       }
       await Project.destroy(client, `${project_id}`);
       return res.status(200).json({

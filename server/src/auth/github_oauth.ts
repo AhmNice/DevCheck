@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GitHubStrategy, Profile } from "passport-github2";
 import { BadRequestError } from "../utils/errorHandler.js";
-import { User } from "../model/User.js";
+import { User } from "../service/User.service.js";
 import UserInterface from "../interface/user.interface.js";
 import { generateRandomPassword } from "../utils/codeGenerator.js";
 import bcrypt from "bcrypt";
@@ -65,7 +65,9 @@ passport.use(
 
         if (!email) {
           return done(
-            new BadRequestError("We couldn't access your GitHub email."),
+            new BadRequestError({
+              message: "We couldn't access your GitHub email.",
+            }),
           );
         }
 
@@ -76,11 +78,15 @@ passport.use(
         if (state && state.type === "connect" && state.userId) {
           const loggedInUser = await User.findById(state.userId);
           if (!loggedInUser) {
-            return done(new BadRequestError("Logged-in user not found."));
+            return done(
+              new BadRequestError({ message: "Logged-in user not found." }),
+            );
           }
           if (loggedInUser.github_id) {
             return done(
-              new BadRequestError("GitHub account already connected."),
+              new BadRequestError({
+                message: "GitHub account already connected.",
+              }),
             );
           }
           const updatedUser = await User.updateGithubUserById(
@@ -108,7 +114,7 @@ passport.use(
           email,
           profile_picture: profile.photos?.[0]?.value || "",
           password: passwordHash,
-          account_role: "user",
+          account_role: "USER",
           google_id: null,
           is_verified: true,
           github_access_token: accessToken,
@@ -123,12 +129,24 @@ passport.use(
 
         if (!existingUser) {
           const newUser = new User(user);
-          existingUser = await newUser.githubSave();
+          existingUser = (await newUser.githubSave()) as Awaited<
+            ReturnType<typeof User.prototype.githubSave>
+          > &
+            Pick<
+              UserInterface,
+              | "github_username"
+              | "github_profile_url"
+              | "github_avatar_url"
+              | "github_connected"
+              | "github_connected_at"
+            >;
         }
         done(null, existingUser);
       } catch (error) {
         console.error("GitHub OAuth error:", error);
-        return done(new BadRequestError("Github authentication failed"));
+        return done(
+          new BadRequestError({ message: "Github authentication failed" }),
+        );
       }
     },
   ),

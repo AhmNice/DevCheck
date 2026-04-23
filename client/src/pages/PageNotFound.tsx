@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Home, ArrowLeft, AlertTriangle, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const PageNotFound = () => {
   const navigate = useNavigate();
@@ -11,7 +11,9 @@ const PageNotFound = () => {
     // Handle search or redirect to search page
     console.log("Searching for:", searchValue);
   };
-
+ useEffect(() => {
+    document.title = "DevCheck - Page Not Found";
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50 to-white flex items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">

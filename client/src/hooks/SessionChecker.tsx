@@ -16,7 +16,7 @@ const SessionChecker = () => {
 
       if (
         !force &&
-        (isCheckingRef.current || now - lastCheckTimeRef.current < 1000)
+        (isCheckingRef.current || now - lastCheckTimeRef.current < 9000)
       ) {
         return;
       }

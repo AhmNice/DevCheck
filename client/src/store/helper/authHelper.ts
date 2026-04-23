@@ -7,14 +7,16 @@ export const createAuthHelpers = (
   start: (isAuthCheck = false) =>
     set({
       loadingUser: true,
+      isAuthenticated: false,
       userError: null,
       userSuccess: undefined,
       checkingAuth: isAuthCheck,
     }),
 
-  success: (user?: UserInterface | null) =>
+  success: ({ user }: { user?: UserInterface | null }) =>
     set({
-      user,
+      user: user,
+      isAuthenticated: true,
       loadingUser: false,
       userError: null,
       userSuccess: true,
@@ -23,6 +25,7 @@ export const createAuthHelpers = (
   error: (message: string) =>
     set({
       user: null,
+      isAuthenticated: false,
       loadingUser: false,
       userError: message,
       userSuccess: undefined,
@@ -31,6 +34,7 @@ export const createAuthHelpers = (
   reset: () =>
     set({
       user: null,
+      isAuthenticated: false,
       loadingUser: false,
       userError: null,
       userSuccess: undefined,

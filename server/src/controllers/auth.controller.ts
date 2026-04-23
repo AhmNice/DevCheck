@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { User } from "../model/User.js";
+import { asyncHandler } from "../utils/requestHandler.js";
+import { User } from "../service/User.service.js";
 import { BadRequestError } from "../utils/errorHandler.js";
 import {
   generateOTP,
@@ -12,7 +12,7 @@ import passport from "passport";
 import config from "../config/config.js";
 import UserInterface from "../interface/user.interface.js";
 import crypto from "crypto";
-import { Session } from "../model/Session.js";
+import { Session } from "../service/Session.service.js";
 import { AuthSecurityService } from "../service/authSecurity.service.js";
 import { EmailService } from "../service/Email.service.js";
 import { ZodError } from "zod";
@@ -20,7 +20,9 @@ const emailService = new EmailService();
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, account_role } = req.body;
   if (await User.exists(email)) {
-    throw new BadRequestError("User with this email already exists");
+    throw new BadRequestError({
+      message: "User with this email already exists",
+    });
   }
   const accountRole = account_role || "user";
   const otp = generateOTP(6);
@@ -50,19 +52,21 @@ export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
   const { purpose } = req.query;
   if (purpose !== "verification" && purpose !== "password_reset") {
-    throw new BadRequestError("Invalid purpose for OTP verification");
+    throw new BadRequestError({
+      message: "Invalid purpose for OTP verification",
+    });
   }
   const user = await User.findByEmailWithOTP(email);
   if (!user) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError({ message: "User not found" });
   }
   await AuthSecurityService.checkLock(user._id);
   if (user.otp !== otp) {
     await AuthSecurityService.registerFailure(user._id);
-    throw new BadRequestError("Invalid OTP or OTP has expired");
+    throw new BadRequestError({ message: "Invalid OTP or OTP has expired" });
   }
   if (user.otp_expiry && user.otp_expiry < new Date()) {
-    throw new BadRequestError("Invalid OTP or OTP has expired");
+    throw new BadRequestError({ message: "Invalid OTP or OTP has expired" });
   }
   const updates: Partial<UserInterface> = {
     otp: null,
@@ -89,13 +93,16 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await User.findByEmailWithPassword(email);
   if (!user) {
-    throw new BadRequestError("Invalid email or password");
+    throw new BadRequestError({ message: "Invalid email or password" });
   }
   await AuthSecurityService.checkLock(user._id);
+  if (!user.password) {
+    throw new BadRequestError({ message: "Invalid email or password" });
+  }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     await AuthSecurityService.registerFailure(user._id);
-    throw new BadRequestError("Invalid email or password");
+    throw new BadRequestError({ message: "Invalid email or password" });
   }
   const nSession = new Session({
     user_id: user._id,
@@ -105,12 +112,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
   await nSession.createSession(res);
   await AuthSecurityService.reset(user._id);
-  const {
-    password: _p,
-    resetPassword_token_expiry: _rte,
-    resetPassword_token: _rt,
-    ...userWithoutPassword
-  } = user;
+  const { password: _p, ...userWithoutPassword } = user;
   res.json({
     success: true,
     message: "Login successful",
@@ -230,7 +232,7 @@ export const requestPasswordReset = asyncHandler(
     const { email } = req.body;
     const user = await User.findByEmail(email);
     if (!user) {
-      throw new BadRequestError("User not found");
+      throw new BadRequestError({ message: "User not found" });
     }
     const token = generateResetPasswordToken();
 
@@ -254,18 +256,18 @@ export const resetPassword = asyncHandler(
     const { token } = req.query;
     const { newPassword } = req.body;
     if (!token || typeof token !== "string") {
-      throw new BadRequestError("Invalid or missing token");
+      throw new BadRequestError({ message: "Invalid or missing token" });
     }
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     const user = await User.findByResetPasswordToken(hashedToken);
     if (!user) {
-      throw new BadRequestError("Invalid or expired token");
+      throw new BadRequestError({ message: "Invalid or expired token" });
     }
     if (
       user.resetPassword_token_expiry &&
       user.resetPassword_token_expiry < new Date()
     ) {
-      throw new BadRequestError("Invalid or expired token");
+      throw new BadRequestError({ message: "Invalid or expired token" });
     }
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await User.updateUserByEmail(user.email, {
@@ -287,9 +289,9 @@ export const checkAuth = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const findUser = await User.findById(`${user?.user_id}`);
   if (!findUser) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError({ message: "User not found" });
   }
-  const { password: _password, ...safeData } = findUser;
+  const { ...safeData } = findUser;
   return res.status(200).json({
     success: true,
     message: "User Authenticated",
@@ -300,7 +302,7 @@ export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const user_id = user?.user_id || "";
   if (req.body === undefined || Object.keys(req.body).length === 0) {
-    throw new BadRequestError("No data provided for update");
+    throw new BadRequestError({ message: "No data provided for update" });
   }
   let updatedUser;
 
@@ -310,9 +312,9 @@ export const userUpdate = asyncHandler(async (req: Request, res: Response) => {
     updatedUser = await User.findById(user_id);
   } catch (error: unknown) {
     if (error instanceof ZodError) {
-      throw new BadRequestError(
-        error.issues[0]?.message || "Invalid input data",
-      );
+      throw new BadRequestError({
+        message: error.issues[0]?.message || "Invalid input data",
+      });
     }
 
     throw error;

@@ -23,7 +23,9 @@ export function rateLimiter({
     const ip =
       (req.headers["x-forwarded-for"] as string) || req.ip || "unknown";
     if (ip === "unknown") {
-      throw new BadRequestError("Unable to determine client IP address");
+      throw new BadRequestError({
+        message: "Unable to determine client IP address",
+      });
     }
 
     const key = `${ip}:${req.path}`;

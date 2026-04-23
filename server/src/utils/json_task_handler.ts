@@ -1,175 +1,164 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "./asyncHandler.js";
-import { BadRequestError } from "./errorHandler.js";
-import { TasksFileSchema } from "../schema/task_schema.js";
-import { Task } from "../model/Task.js";
-import { SubTask } from "../model/SubTask.js";
-import { pool } from "../config/db.config.js";
-import { User } from "../model/User.js";
-import { ProjectSchema } from "../schema/project.schema.js";
-import { Project } from "../model/Project.js";
-
-interface FileRequest extends Request {
+import { asyncHandler } from "./requestHandler.js";
+import { APIError } from "./errorHandler.js";
+import { SessionPayload } from "../interface/session.interface.js";
+import prisma from "../config/database.js";
+import { TasksFileSchema } from "../validation/task_schema.js";
+import { User } from "../service/User.service.js";
+import { BaseProjectSchema } from "../validation/project.schema.js";
+import { ApiResponse } from "./ApiResponse.js";
+export interface FileRequest extends Request {
   file?: Express.Multer.File;
+  user?: SessionPayload;
   files?:
     | Express.Multer.File[]
     | { [fieldname: string]: Express.Multer.File[] };
 }
+
 export const jsonTaskHandler = asyncHandler(
   async (req: FileRequest, res: Response) => {
     const file = req.file;
-    const { user_id } = req.body;
-    if (!user_id) {
-      throw new BadRequestError("Missing required field: user_id");
-    }
-    const user = await User.findById(user_id);
-    if (!user) {
-      throw new BadRequestError("User not found");
-    }
-    if (!file) {
-      throw new BadRequestError("No file uploaded");
-    }
-    const fileBuffer = file.buffer;
-    if (!fileBuffer || fileBuffer.length === 0) {
-      throw new BadRequestError("File is empty");
-    }
-    const content = fileBuffer.toString("utf-8");
+    const user_id = req.user?.user_id;
+
+    if (!file)
+      throw new APIError({ message: "No file uploaded", statusCode: 400 });
+    if (!user_id)
+      throw new APIError({
+        message: "User not authenticated",
+        statusCode: 401,
+      });
+
+    const user = await prisma.user.findUnique({
+      where: { id: user_id },
+    });
+
+    if (!user)
+      throw new APIError({ message: "User not found", statusCode: 404 });
+
+    const content = file.buffer.toString("utf-8");
     const parsedContent = JSON.parse(content);
     const validatedTasks = TasksFileSchema.parse(parsedContent);
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-      console.log("Validated tasks:", validatedTasks);
-      const tasksToSave = validatedTasks.map(
-        (task) =>
-          new Task({
-            user_id: user_id,
-            project_id: task.project_id || null,
-            title: task.title,
-            description: task.description,
-            due_date: new Date(task.due_date),
-            status: task.status || "pending",
-            priority: task.priority,
+    const results = await prisma.$transaction(async (tx) => {
+      const createTasks = await Promise.all(
+        validatedTasks.map((task) =>
+          tx.task.create({
+            data: {
+              userId: user_id,
+              projectId: task.project_id || null,
+              title: task.title,
+              description: task.description,
+              dueDate: task.due_date ? new Date(task.due_date) : new Date(),
+              status: task.status || "PLANNED",
+              priority: task.priority || "MEDIUM",
+            },
           }),
+        ),
       );
-      const savedTasks = await Task.insertMany(tasksToSave, client);
-      console.log("Saved tasks:", savedTasks);
-      if (savedTasks.length === 0) {
-        throw new BadRequestError("No valid tasks to import");
-      }
-      const subTasksToSave: SubTask[] = validatedTasks
-        .map((task) =>
-          task?.subtasks?.map(
-            (sub) =>
-              new SubTask({
-                task_id:
-                  savedTasks.find((t) => t.title === task.title)?._id || "",
-                title: sub.title,
-                description: sub.description,
-                due_date: sub.due_date
-                  ? new Date(sub.due_date)
-                  : new Date(Date.now() + 7),
-                status: sub.status || "pending",
-              }),
-          ),
-        )
-        .flat()
-        .filter((item): item is SubTask => item !== undefined);
-      console.log("Subtasks to save:", subTasksToSave);
-      await SubTask.insertMany(subTasksToSave, client);
-      await client.query("COMMIT");
 
-      res.status(200).json({
-        success: true,
-        message: "Tasks imported successfully",
+      const subTasks = validatedTasks.flatMap((task, index) => {
+        const taskId = createTasks[index].id;
+
+        return (task.subtasks || []).map((sub) => ({
+          taskId,
+          title: sub.title,
+          description: sub.description,
+          dueDate: sub.due_date
+            ? new Date(sub.due_date)
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: sub.status || "PLANNED",
+        }));
       });
-    } catch (error) {
-      await client.query("ROLLBACK");
-      console.log("Error importing tasks:", error as Error);
-      throw error;
-    } finally {
-      client.release();
-    }
+
+      if (subTasks.length) {
+        await tx.subtask.createMany({
+          data: subTasks,
+        });
+      }
+      const updatedTasksList = await tx.task.findMany({
+        where: { userId: user_id },
+        include: { subtasks: true },
+      });
+      console.log("Created tasks and subtasks successfully");
+      return updatedTasksList;
+    });
+    console.log("Transaction completed, sending response");
+    return res
+      .status(200)
+      .json(new ApiResponse(200, results, "Tasks uploaded successfully"));
   },
 );
 export const jsonProjectHandler = asyncHandler(
   async (req: FileRequest, res: Response) => {
     const file = req.file;
-    const { user_id } = req.body;
-    if (!user_id) {
-      throw new BadRequestError("Missing required field: user_id");
-    }
+    const user_id = req.user?.user_id;
+    if (!user_id)
+      throw new APIError({
+        message: "User not authenticated",
+        statusCode: 401,
+      });
+    if (!file)
+      throw new APIError({ message: "No file uploaded", statusCode: 400 });
     const user = await User.findById(user_id);
-    if (!user) {
-      throw new BadRequestError("User not found");
-    }
-    if (!file) {
-      throw new BadRequestError("No file uploaded");
-    }
+    if (!user)
+      throw new APIError({ message: "User not found", statusCode: 404 });
     const fileBuffer = file.buffer;
     if (!fileBuffer || fileBuffer.length === 0) {
-      throw new BadRequestError("File is empty");
+      throw new APIError({ message: "Invalid file content", statusCode: 400 });
     }
     const content = fileBuffer.toString("utf-8");
     const parsedContent = JSON.parse(content);
-    const validatedProject = ProjectSchema.parse(parsedContent);
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      const project = new Project({
-        user_id: user_id,
-        name: validatedProject.name,
-        description: validatedProject.description,
-        deadline: validatedProject.deadline
-          ? new Date(validatedProject.deadline)
-          : undefined,
+    const validatedProjects = BaseProjectSchema.parse(parsedContent);
+    const results = await prisma.$transaction(async (tx) => {
+      const project = await tx.project.create({
+        data: {
+          userId: user_id,
+          name: validatedProjects.name,
+          description: validatedProjects.description,
+          deadline: validatedProjects.deadline
+            ? new Date(validatedProjects.deadline)
+            : null,
+        },
       });
-
-      const savedProject = await project.create(client);
-
-      for (const taskData of validatedProject.tasks) {
-        const task = new Task({
-          title: taskData.title,
-          user_id: user_id,
-          description: taskData.description,
-          due_date: taskData.due_date
-            ? new Date(taskData.due_date)
+      const tasks =
+        validatedProjects.tasks &&
+        (await Promise.all(
+          validatedProjects.tasks.map((task) =>
+            tx.task.create({
+              data: {
+                title: task.title,
+                projectId: project.id,
+                userId: user_id,
+                description: task.description,
+                dueDate: task.due_date ? new Date(task.due_date) : new Date(),
+                status: task.status || "PLANNED",
+                priority: task.priority || "MEDIUM",
+              },
+            }),
+          ),
+        ));
+      const subTasks = validatedProjects.tasks.flatMap((task, index) => {
+        const taskId = tasks[index].id;
+        return (task.subtasks || []).map((sub) => ({
+          taskId,
+          title: sub.title,
+          description: sub.description,
+          dueDate: sub.due_date
+            ? new Date(sub.due_date)
             : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          status: taskData.status,
-          priority: taskData.priority,
-          project_id: savedProject._id,
-        });
-
-        const savedTask = await task.save(client);
-
-        if (taskData.subtasks?.length) {
-          for (const subtaskData of taskData.subtasks) {
-            const subtask = new SubTask({
-              task_id: savedTask._id,
-              title: subtaskData.title,
-              description: subtaskData.description,
-              due_date: subtaskData.due_date
-                ? new Date(subtaskData.due_date)
-                : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              status: subtaskData.status,
-            });
-
-            await subtask.save(client);
-          }
-        }
-      }
-      await client.query("COMMIT");
-      res.status(200).json({
-        success: true,
-        message: "Project imported successfully",
+          status: sub.status || "PLANNED",
+        }));
       });
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      if (subTasks.length) {
+        await tx.subtask.createMany({
+          data: subTasks,
+        });
+      }
+      return { project, tasks };
+    });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, results, "Task uploaded successfully"));
   },
 );
