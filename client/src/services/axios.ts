@@ -10,7 +10,7 @@ const public_pages = [
   "/",
   "/auth/login",
   "/auth/success",
-  "/auth/register",
+  "/auth/signup",
   "/auth/forgot-password",
   "/auth/verify-otp",
   "/auth/reset-password",
@@ -39,7 +39,6 @@ api.interceptors.response.use(
       toastError(message);
       return Promise.reject(error);
     }
-    toastError(message);
     return Promise.reject(error);
   },
 );

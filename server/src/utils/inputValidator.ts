@@ -10,7 +10,7 @@ export const validateRegisterInput = [
     .withMessage("Password must be at least 6 characters long")
     .escape(),
   body("account_role")
-    .isIn(["user", "admin"])
+    .isIn(["USER", "ADMIN"])
     .withMessage("Invalid account role")
     .escape(),
 ];
@@ -29,6 +29,9 @@ export const validateOTPInput = [
     .withMessage("Invalid purpose for OTP verification")
     .escape(),
 ];
+/**
+ * @deprecated
+ * */
 export const validateTaskInput = [
   body("title").notEmpty().withMessage("Title is required").escape(),
   body("description").optional().escape(),
@@ -42,10 +45,13 @@ export const validateTaskInput = [
     .withMessage("Invalid status value")
     .escape(),
   body("priority")
-    .isIn(["normal", "medium", "high"])
+    .isIn(["LOW", "MEDIUM", "HIGH"])
     .withMessage("Invalid priority value")
     .escape(),
 ];
+/**
+ * @deprecated
+ * */
 export const validateSubtaskInput = [
   body("title").notEmpty().withMessage("Title is required").escape(),
   body("description").optional().escape(),
@@ -59,6 +65,9 @@ export const validateSubtaskInput = [
     .withMessage("Invalid status value")
     .escape(),
 ];
+/**
+ * @deprecated
+ * */
 export const validateProjectInput = [
   body("name").notEmpty().withMessage("Name is required").escape(),
   body("description").optional().escape(),
@@ -68,6 +77,9 @@ export const validateProjectInput = [
     .withMessage("Invalid deadline format")
     .escape(),
 ];
+/**
+ * @deprecated
+ * */
 export const validateId = (id_value: string) => {
   return [
     param(`${id_value}`)
@@ -76,6 +88,9 @@ export const validateId = (id_value: string) => {
       .escape(),
   ];
 };
+/**
+ * @deprecated
+ * */
 export const validationResultHandler = (
   req: Request,
   res: Response,
@@ -83,12 +98,12 @@ export const validationResultHandler = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    throw new BadRequestError(
-      errors
+    throw new BadRequestError({
+      message: errors
         .array()
         .map((err) => err.msg)
         .join(", "),
-    );
+    });
   }
   next();
 };

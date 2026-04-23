@@ -8,7 +8,7 @@ export const connectGitHub = (
   next: NextFunction,
 ) => {
   if (!req.user) {
-    throw new BadRequestError("User not authenticated");
+    throw new BadRequestError({ message: "User not authenticated" });
   }
 
   passport.authenticate("github", {

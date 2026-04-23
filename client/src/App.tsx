@@ -54,7 +54,7 @@ function App() {
         <Route
           path="dashboard"
           element={
-            <Protected requiredRole={"user"}>
+            <Protected requiredRole={"USER"}>
               <Dashboard />
             </Protected>
           }
@@ -62,7 +62,7 @@ function App() {
         <Route
           path="task"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <Tasks />
             </Protected>
           }
@@ -70,7 +70,7 @@ function App() {
         <Route
           path="import"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <Import />
             </Protected>
           }
@@ -78,7 +78,7 @@ function App() {
         <Route
           path="analytics"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <Analytics />
             </Protected>
           }
@@ -86,7 +86,7 @@ function App() {
         <Route
           path="task/:title/:id"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <TaskDetials />
             </Protected>
           }
@@ -95,7 +95,7 @@ function App() {
         <Route
           path="profile"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <Profile />
             </Protected>
           }
@@ -103,7 +103,7 @@ function App() {
         <Route
           path="settings"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <Settings />
             </Protected>
           }
@@ -111,7 +111,7 @@ function App() {
         <Route
           path="settings/connect/github"
           element={
-            <Protected>
+            <Protected requiredRole={"USER"}>
               <GithubConnection />
             </Protected>
           }

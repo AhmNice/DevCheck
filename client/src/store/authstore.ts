@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
         request: () => api.post("/auth/user/login", payload),
 
         onSuccess: (data) => {
-          authHelpers.success(data.user);
+          authHelpers.success({ user: data.user });
         },
 
         onError: (error) => {
@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
         request: () => api.post("/auth/user/register", payload),
 
         onSuccess: (data) => {
-          authHelpers.success(data.user);
+          authHelpers.success({ user: data.user });
         },
 
         onError: (error) => {
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
         request: () => api.get("/auth/github-auth"),
 
         onSuccess: () => {
-          authHelpers.success(null);
+          authHelpers.success({ user: null });
         },
 
         onError: (error) => {
@@ -125,8 +125,9 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
       authHelpers.start(true);
       await handleRequest({
         request: () => api.get(`/auth/user/authenticate`),
+
         onSuccess: (data) => {
-          authHelpers.success(data.user);
+          authHelpers.success({ user: data.user });
         },
         onError: (error) => {
           authHelpers.error(
@@ -142,7 +143,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
       await handleRequest({
         request: () => api.get(`/auth/user/authenticate`),
         onSuccess: (data) => {
-          authHelpers.success(data.user);
+          authHelpers.success({ user: data.user });
         },
         onError: (error) => {
           authHelpers.error(
@@ -157,9 +158,9 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
       authHelpers.start();
       await handleRequest({
         request: () => api.get("/auth/user/logout"),
-        onSuccess: () => {
-          authHelpers.success(null);
-        },
+        // onSuccess: () => {
+        //   authHelpers.success({ user: null });
+        // },
         onError: (error) => {
           authHelpers.error(error?.response?.data?.message || "Logout failed");
         },

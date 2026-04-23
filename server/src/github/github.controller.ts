@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/requestHandler.js";
 import { BadRequestError } from "../utils/errorHandler.js";
-import { User } from "../model/User.js";
+import { User } from "../service/User.service.js";
 import { GitHubService } from "../service/github.service.js";
-import { Task } from "../model/Task.js";
+import { Task } from "../service/Task.service.js";
 import { createGitHubWebhook } from "../hooks/github_webhook.js";
-import { GitHubRepo } from "../model/Repo.js";
+import { GitHubRepo } from "../service/Repo.service.js";
 import { pool } from "../config/db.config.js";
 import passport from "passport";
 import UserInterface from "../interface/user.interface.js";
@@ -31,15 +31,17 @@ export const getUserRepos = asyncHandler(
     const userPayload = req.user;
     const user_id = userPayload?.user_id;
     if (!user_id) {
-      throw new BadRequestError("User ID not found in request");
+      throw new BadRequestError({ message: "User ID not found in request" });
     }
     const user = await User.findById(user_id);
     if (!user) {
-      throw new BadRequestError("User not found");
+      throw new BadRequestError({ message: "User not found" });
     }
     const accessToken = user.github_access_token;
     if (!accessToken) {
-      throw new BadRequestError("GitHub access token not found for user");
+      throw new BadRequestError({
+        message: "GitHub access token not found for user",
+      });
     }
     const repos = await GitHubService.getUserRepos(accessToken);
     return res.json({ success: true, repos });
@@ -49,20 +51,24 @@ export const searchRepos = asyncHandler(async (req: Request, res: Response) => {
   const userPayload = req.user;
   const user_id = userPayload?.user_id;
   if (!user_id) {
-    throw new BadRequestError("User ID not found in request");
+    throw new BadRequestError({ message: "User ID not found in request" });
   }
   const user = await User.findById(user_id);
   if (!user) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError({ message: "User not found" });
   }
   const accessToken = user.github_access_token;
   if (!accessToken) {
-    throw new BadRequestError("GitHub access token not found for user");
+    throw new BadRequestError({
+      message: "GitHub access token not found for user",
+    });
   }
 
   const query = req.query.q as string;
   if (!query) {
-    throw new BadRequestError("Search query parameter 'q' is required");
+    throw new BadRequestError({
+      message: "Search query parameter 'q' is required",
+    });
   }
   const repos = await GitHubService.searchRepos(query, accessToken);
   return res.json({ success: true, repos });
@@ -72,23 +78,27 @@ export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
   const { repoFullName } = req.body;
 
   if (!user_id) {
-    throw new BadRequestError("User ID not found in request");
+    throw new BadRequestError({ message: "User ID not found in request" });
   }
 
   if (!repoFullName) {
-    throw new BadRequestError("Repository full name is required");
+    throw new BadRequestError({ message: "Repository full name is required" });
   }
   const user = await User.findById(user_id);
   if (!user) {
-    throw new BadRequestError("User not found");
+    throw new BadRequestError({ message: "User not found" });
   }
   const accessToken = user.github_access_token;
   if (!accessToken) {
-    throw new BadRequestError("GitHub access token not found for user");
+    throw new BadRequestError({
+      message: "GitHub access token not found for user",
+    });
   }
   const [owner, repo] = repoFullName.split("/");
   if (!owner || !repo) {
-    throw new BadRequestError("Invalid repository format. Use owner/repo");
+    throw new BadRequestError({
+      message: "Invalid repository format. Use owner/repo",
+    });
   }
   const existingRepo = await GitHubRepo.findByRepo(pool, {
     owner,
@@ -96,7 +106,7 @@ export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
     repo,
   });
   if (existingRepo) {
-    throw new BadRequestError("Repository is already connected");
+    throw new BadRequestError({ message: "Repository is already connected" });
   }
   let connectedRepo;
   try {
@@ -111,9 +121,9 @@ export const connectRepo = asyncHandler(async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error connecting repository:", error);
-    throw new BadRequestError(
-      "Failed to connect repository. Please try again.",
-    );
+    throw new BadRequestError({
+      message: "Failed to connect repository. Please try again.",
+    });
   }
 
   return res.json({

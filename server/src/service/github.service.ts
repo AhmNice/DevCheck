@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { GitHubRepo } from "../model/Repo.js";
+import { GitHubRepo } from "./Repo.service.js";
 
 export class GitHubService {
   static getUserRepos = async (accessToken: string) => {

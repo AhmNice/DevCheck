@@ -1,4 +1,4 @@
-import { Session } from "../model/Session.js";
+import { Session } from "../service/Session.service.js";
 import { Request, Response, NextFunction } from "express";
 export const verifySession = async (
   req: Request,
