@@ -1,10 +1,4 @@
-export type TaskStatus =
-  | "BACKLOG"
-  | "PLANNED"
-  | "IN_PROGRESS"
-  | "IN_REVIEW"
-  | "SHIPPED"
-  | "BLOCKED";
+import type { Priority, TaskStatus } from "../types/types.ts";
 
 export interface Subtask {
   _id: string; // UUID
@@ -27,7 +21,7 @@ export interface Task {
   status: TaskStatus;
   completed_subtasks: number;
   total_subtasks: number;
-  priority: " LOW" | "MEDIUM" | "HIGH";
+  priority: Priority;
   created_by: {
     email: string;
     name: string;
@@ -46,7 +40,7 @@ export interface Task {
   blocked_reason?: string;
 }
 export interface TaskSummaryItem {
-  status_group: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
+  status_group: TaskStatus;
   count: string;
 }
 

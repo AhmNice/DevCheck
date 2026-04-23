@@ -10,6 +10,5 @@ export const formatErrorMessage = (message: string) => {
     .replace(/\|/g, ", ")
     .trim();
 
-  console.log("Formatted Error Message:", cleanedMessage); // Debug log to verify formatting
   return cleanedMessage.charAt(0).toUpperCase() + cleanedMessage.slice(1);
 };
