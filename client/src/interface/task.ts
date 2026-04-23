@@ -4,8 +4,7 @@ export type TaskStatus =
   | "IN_PROGRESS"
   | "IN_REVIEW"
   | "SHIPPED"
-  | "BLOCKED"
-  | "COMPLETED";
+  | "BLOCKED";
 
 export interface Subtask {
   _id: string; // UUID
@@ -36,6 +35,15 @@ export interface Task {
   created_at: string;
   updated_at: string;
   subtasks: Subtask[];
+  isOverDue: boolean;
+  attachments: {
+    _id: string;
+    filename: string;
+    url: string;
+    created_at: string;
+    size?: number;
+  }[];
+  blocked_reason?: string;
 }
 export interface TaskSummaryItem {
   status_group: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "BLOCKED";

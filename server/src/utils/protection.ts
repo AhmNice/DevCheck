@@ -25,8 +25,6 @@ export const protectedRoute = (requiredRoles: Role | Role[]) => {
       const roles = Array.isArray(requiredRoles)
         ? requiredRoles
         : [requiredRoles];
-      console.log("User role from token:", decoded.role);
-      console.log("Required roles for this route:", roles);
       if (!roles.includes(decoded.role as Role)) {
         throw new UnauthorizedError({
           message: "Insufficient permissions to access this resource",

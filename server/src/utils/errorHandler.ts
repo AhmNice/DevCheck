@@ -3,6 +3,7 @@ import config from "../config/config.js";
 import multer from "multer";
 import { Prisma } from "../generated/prisma/client.js";
 import { ZodError } from "zod";
+import { formatErrorMessage } from "./formatErrorMessage.js";
 
 const isProduction = config.NODE_ENV === "production";
 
@@ -160,7 +161,7 @@ const globalErrorHandler = (
   } else if (err instanceof ZodError) {
     const errors = (err as any).issues.map((err: any) => ({
       field: err.path.join("."),
-      message: err.message,
+      message: formatErrorMessage(err.message),
     }));
     error = new APIError({
       message: "Validation Error",

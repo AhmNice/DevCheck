@@ -39,7 +39,6 @@ api.interceptors.response.use(
       toastError(message);
       return Promise.reject(error);
     }
-    toastError(message);
     return Promise.reject(error);
   },
 );

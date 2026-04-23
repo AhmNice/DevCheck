@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "./asyncHandler.js";
+import { asyncHandler } from "./requestHandler.js";
 import { APIError } from "./errorHandler.js";
 import { SessionPayload } from "../interface/session.interface.js";
 import prisma from "../config/database.js";
 import { TasksFileSchema } from "../validation/task_schema.js";
 import { User } from "../service/User.service.js";
 import { BaseProjectSchema } from "../validation/project.schema.js";
-interface FileRequest extends Request {
+import { ApiResponse } from "./ApiResponse.js";
+export interface FileRequest extends Request {
   file?: Express.Multer.File;
   user?: SessionPayload;
   files?:
@@ -74,14 +75,17 @@ export const jsonTaskHandler = asyncHandler(
           data: subTasks,
         });
       }
+      const updatedTasksList = await tx.task.findMany({
+        where: { userId: user_id },
+        include: { subtasks: true },
+      });
       console.log("Created tasks and subtasks successfully");
-      return createTasks;
+      return updatedTasksList;
     });
     console.log("Transaction completed, sending response");
-    return res.status(200).json({
-      success: true,
-      data: results,
-    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, results, "Tasks uploaded successfully"));
   },
 );
 export const jsonProjectHandler = asyncHandler(
@@ -153,9 +157,8 @@ export const jsonProjectHandler = asyncHandler(
       return { project, tasks };
     });
 
-    return res.status(200).json({
-      success: true,
-      data: results,
-    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, results, "Task uploaded successfully"));
   },
 );

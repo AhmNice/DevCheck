@@ -8,6 +8,7 @@ import {
 import { SubtaskInterface } from "../interface/task.interface.js";
 import prisma from "../config/database.js";
 import { APIError } from "../utils/errorHandler.js";
+import { executeSubTaskTransition } from "../helper/task.transition.js";
 type subInterface = Pick<
   SubtaskInterface,
   "task_id" | "title" | "description" | "due_date" | "status"
@@ -207,6 +208,65 @@ export class SubTaskService {
       return await childTx.subtask.createMany({ data: subtaskData });
     });
     return SubTaskService.toLegacySubtask(createdSubTasks as any);
+  }
+  static async transitionStatus({
+    subTaskId,
+    newStatus,
+    userId,
+  }: {
+    subTaskId: string;
+    newStatus: Status;
+    userId: string;
+  }) {
+    const updatedSubTask = await executeSubTaskTransition({
+      subtaskId: subTaskId,
+      userId,
+      newStatus,
+    });
+    return SubTaskService.toLegacySubtask(updatedSubTask);
+  }
+  static async subTaskDetails(id: string, user_id: string) {
+    const subtask = await prisma.subtask.findFirst({
+      where: {
+        id,
+        task: {
+          userId: user_id,
+        },
+      },
+    });
+
+    if (!subtask) {
+      throw new APIError({
+        message: "Subtask not found",
+        statusCode: 404,
+        code: "SUBTASK_NOT_FOUND",
+      });
+    }
+
+    return SubTaskService.toLegacySubtask(subtask);
+  }
+  static async updateById(
+    id: string,
+    user_id: string,
+    updateData: Partial<subInterface>,
+  ) {
+    const updatedSubtask = await prisma.subtask.updateMany({
+      where: {
+        id,
+        task: {
+          userId: user_id,
+        },
+      },
+      data: {
+        title: updateData.title,
+        description: updateData.description,
+        dueDate: updateData.due_date
+          ? new Date(updateData.due_date)
+          : undefined,
+        status: updateData.status,
+      },
+    });
+    return SubTaskService.toLegacySubtask(updatedSubtask as any);
   }
   static async deleteById(id: string, tx: PrismaTx) {
     const deletedSubtask = await tx.subtask.delete({ where: { id } });

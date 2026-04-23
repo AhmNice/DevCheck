@@ -1,20 +1,11 @@
 import { z } from "zod";
-import sanitizeHtml from "sanitize-html";
 
-export const sanitizeInput = (val: unknown): string | unknown => {
-  if (typeof val !== "string") return val;
-
-  return sanitizeHtml(val.trim(), {
-    allowedTags: [],
-    allowedAttributes: {},
-    disallowedTagsMode: "recursiveEscape",
-  });
-};
-
-const SubtaskSchema = z.object({
-  title: z.preprocess(sanitizeInput, z.string().min(1)),
-  description: z.preprocess(sanitizeInput, z.string().optional()),
-  due_date: z.preprocess(sanitizeInput, z.string().datetime()).optional(),
+// 1. The Raw Shape (No refinements yet)
+const TaskShape = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  due_date: z.iso.datetime(),
+  project_id: z.string().optional(),
   status: z.enum([
     "BACKLOG",
     "PLANNED",
@@ -22,48 +13,81 @@ const SubtaskSchema = z.object({
     "IN_REVIEW",
     "SHIPPED",
     "BLOCKED",
-    "COMPLETED",
   ]),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  subtasks: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        due_date: z.string().datetime().optional(),
+        status: z.enum([
+          "BACKLOG",
+          "PLANNED",
+          "IN_PROGRESS",
+          "IN_REVIEW",
+          "SHIPPED",
+          "BLOCKED",
+        ]),
+        description: z.string().optional(),
+      }),
+    )
+    .optional()
+    .default([]),
 });
 
+// 2. The Reusable Refinement Logic
+const dateRefinement = {
+  validator: (data: any) => {
+    if (!data.subtasks || !data.due_date) return true;
+    const taskDue = new Date(data.due_date);
+    return data.subtasks.every((sub: any) => {
+      if (!sub.due_date) return true;
+      return new Date(sub.due_date) <= taskDue;
+    });
+  },
+  params: {
+    message: "Subtask due date cannot exceed task due date",
+    path: ["subtasks"],
+  },
+};
+
+/**
+ * BaseTaskSchema
+ * Used for internal logic and as a building block for Projects.
+ */
+export const BaseTaskSchema = TaskShape.refine(
+  dateRefinement.validator,
+  dateRefinement.params,
+);
+
+/**
+ * TaskSchema (For CREATE)
+ * Wraps the base logic in a 'body' object for Express middleware.
+ */
 export const TaskSchema = z.object({
-  body: z
-    .object({
-      title: z.preprocess(sanitizeInput, z.string().min(1)),
-      description: z.preprocess(sanitizeInput, z.string().optional()),
-      due_date: z.preprocess(sanitizeInput, z.string().datetime()),
-      project_id: z.preprocess(sanitizeInput, z.string()).optional(),
-      status: z.enum([
-        "BACKLOG",
-        "PLANNED",
-        "IN_PROGRESS",
-        "IN_REVIEW",
-        "SHIPPED",
-        "BLOCKED",
-      ]),
-      priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
-      subtasks: z.array(SubtaskSchema).optional().default([]),
-    })
-    .refine(
-      (data) => {
-        if (data.subtasks.length === 0) return true;
-        const taskDue = new Date(data.due_date);
-        return data.subtasks.every((sub) => {
-          if (!sub.due_date) return true;
-          const subDue = new Date(sub.due_date);
-          return subDue <= taskDue;
-        });
-      },
-      { message: "Subtask due date cannot exceed task due date" },
-    ),
+  body: BaseTaskSchema,
 });
-export const BaseTaskSchema = z
-  .object({
-    title: z.preprocess(sanitizeInput, z.string().min(1)),
-    description: z.preprocess(sanitizeInput, z.string().optional()),
-    due_date: z.preprocess(sanitizeInput, z.string().datetime()),
-    project_id: z.preprocess(sanitizeInput, z.string()).optional(),
-    status: z.enum([
+
+/**
+ * TasksFileSchema
+ * Restored: Used for bulk imports/JSON file uploads.
+ */
+export const TasksFileSchema = z.array(BaseTaskSchema);
+
+/**
+ * UpdateTaskSchema (For PATCH)
+ * Partial first to allow optional fields, then re-applies the date logic.
+ */
+export const UpdateTaskSchema = z.object({
+  body: TaskShape.partial().refine(
+    dateRefinement.validator,
+    dateRefinement.params,
+  ),
+});
+export const updateStatusSchema = z.object({
+  body: z.object({
+    task_id: z.string().uuid("Invalid Task ID"),
+    newStatus: z.enum([
       "BACKLOG",
       "PLANNED",
       "IN_PROGRESS",
@@ -72,20 +96,9 @@ export const BaseTaskSchema = z
       "BLOCKED",
       "COMPLETED",
     ]),
-    priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
-    subtasks: z.array(SubtaskSchema).optional().default([]),
-  })
-  .refine(
-    (data) => {
-      if (data.subtasks.length === 0) return true;
-      const taskDue = new Date(data.due_date);
-      return data.subtasks.every((sub) => {
-        if (!sub.due_date) return true;
-        const subDue = new Date(sub.due_date);
-        return subDue <= taskDue;
-      });
-    },
-    { message: "Subtask due date cannot exceed task due date" },
-  );
-
-export const TasksFileSchema = z.array(BaseTaskSchema);
+    blockedReason: z.string().optional(),
+  }),
+  params: z.object({
+    task_id: z.string().uuid("Invalid Task ID in URL"),
+  }),
+});

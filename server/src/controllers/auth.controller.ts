@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/requestHandler.js";
 import { User } from "../service/User.service.js";
 import { BadRequestError } from "../utils/errorHandler.js";
 import {

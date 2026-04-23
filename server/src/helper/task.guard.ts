@@ -5,6 +5,9 @@ import { Status } from "../types/status.type.js";
 const ACTIVE_STATUSES: readonly Status[] = ["IN_PROGRESS", "IN_REVIEW"];
 type PrismaTx = Prisma.TransactionClient;
 
+/**
+ * @description Checks if a status transition is allowed based on guard conditions.
+ */
 export const checkStatusTransitionGuards = async ({
   taskId,
   fromStatus,

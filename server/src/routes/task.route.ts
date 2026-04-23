@@ -1,36 +1,32 @@
 import express from "express";
 import {
+  changeStatus,
   createTask,
-  deleteSubtask,
   deleteTask,
   getTasksByUserId,
   getTaskWithSubtasks,
-  saveSubtask,
   updateTask,
+  uploadJsonTaskFile,
 } from "../controllers/task.controller.js";
-import { jsonTaskHandler } from "../utils/json_task_handler.js";
 import { singleUpload } from "../middleware/file_uploader.js";
 import {
   validateId,
-  validateSubtaskInput,
   validationResultHandler,
 } from "../utils/inputValidator.js";
 import { verifySession } from "../middleware/verifysession.js";
-import { validate } from "../middleware/validate.middleware.js";
-import { TaskSchema } from "../validation/task_schema.js";
+import {
+  sanitizeBodyMiddleware,
+  validate,
+} from "../middleware/validate.middleware.js";
+import { TaskSchema, updateStatusSchema } from "../validation/task_schema.js";
 import { protectedRoute } from "../utils/protection.js";
 
 const taskRouter = express.Router();
 
-taskRouter.use(verifySession, protectedRoute(["USER"]));
+taskRouter.use(verifySession, protectedRoute(["USER"]), sanitizeBodyMiddleware);
+
 taskRouter.post("/create", validate(TaskSchema), createTask);
-taskRouter.post(
-  "/:task_id/subtasks",
-  validateSubtaskInput,
-  validationResultHandler,
-  saveSubtask,
-);
-taskRouter.post("/import", singleUpload, jsonTaskHandler);
+taskRouter.post("/import", singleUpload, uploadJsonTaskFile);
 taskRouter.get(
   "/get/:task_id",
   validateId("task_id"),
@@ -49,7 +45,11 @@ taskRouter.delete(
   validationResultHandler,
   deleteTask,
 );
-taskRouter.delete("/delete/subtask/:subtask_id", deleteSubtask);
+taskRouter.put(
+  "/transition/:task_id",
+  validate(updateStatusSchema),
+  changeStatus,
+);
 taskRouter.put(
   "/update/:task_id",
   validateId("task_id"),

@@ -35,9 +35,9 @@
 
 ### Exit Checklist
 
-- [ ] Full auth flow tested manually
-- [ ] No critical API crashes
-- [ ] Setup reproducible by another developer
+- [x] Full auth flow tested manually
+- [x] No critical API crashes
+- [x] Setup reproducible by another developer
 
 ---
 
@@ -45,13 +45,13 @@
 
 ### Task System Core
 
-- [ ] Create task (title, description, due date, priority)
-- [ ] Read single and list tasks
-- [ ] Update task details
-- [ ] Delete task
-- [ ] Task status tracking (Todo / In Progress / Done)
-- [ ] Subtasks CRUD
-- [ ] Progress calculation working correctly
+- [x] Create task (title, description, due date, priority)
+- [x] Read single and list tasks
+- [x] Update task details
+- [x] Delete task
+- [x] Task status tracking (Todo / In Progress / Done)
+- [x] Subtasks CRUD
+- [x] Progress calculation working correctly
 
 ### Dashboard
 

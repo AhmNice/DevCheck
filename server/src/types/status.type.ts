@@ -4,5 +4,4 @@ export type Status =
   | "IN_PROGRESS"
   | "BLOCKED"
   | "IN_REVIEW"
-  | "SHIPPED"
-  | "COMPLETED";
+  | "SHIPPED";

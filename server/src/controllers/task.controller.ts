@@ -1,127 +1,165 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/requestHandler.js";
 import { TaskService } from "../service/Task.service.js";
+import { APIError } from "../utils/errorHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { FileRequest } from "../utils/json_task_handler.js";
+import { TasksFileSchema } from "../validation/task_schema.js";
 
 /**
- * @route   POST /tasks
- * @desc    Creates a new task (and optional subtasks)
- * @access  Authenticated
+ * Helper to ensure user_id exists from middleware
  */
-export const createTask = asyncHandler(async (req: Request, res: Response) => {
-  const task = await TaskService.create(req.body);
+const getAuthUser = (req: Request) => {
+  const userId = req.user?.user_id;
+  if (!userId) {
+    throw new APIError({
+      message: "Unauthorized: User session not found",
+      statusCode: 401,
+      code: "UNAUTHORIZED",
+    });
+  }
+  return userId;
+};
 
-  return res.status(201).json({
-    success: true,
-    message: "Task created successfully",
-    task,
-  });
+export const createTask = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getAuthUser(req);
+
+  // Spread body but force the authenticated userId
+  const task = await TaskService.create({ ...req.body, user_id: userId });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, task, "Task created successfully"));
 });
 
-/**
- * @route   GET /tasks/:task_id
- * @desc    Get full task details including subtasks and user info
- */
 export const getTaskWithSubtasks = asyncHandler(
   async (req: Request, res: Response) => {
+    const userId = getAuthUser(req);
     const { task_id } = req.params;
-    const user_id = req.user?.user_id;
-
-    if (!user_id) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
 
     const task = await TaskService.taskDetails({
       id: `${task_id}`,
-      user_id: `${user_id}`,
+      user_id: userId,
     });
 
-    return res.status(200).json({
-      success: true,
-      task,
-    });
+    if (!task) {
+      throw new APIError({ message: "Task not found", statusCode: 404 });
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, task, "Task details retrieved"));
   },
 );
 
-/**
- * @route   PATCH /tasks/:task_id
- * @desc    Updates task fields and optionally syncs subtasks
- */
 export const updateTask = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getAuthUser(req);
   const { task_id } = req.params;
-  const { user_id, ...updateData } = req.body;
 
-  const updatedTask = await TaskService.update(
-    `${task_id}`,
-    `${user_id}`,
-    updateData,
-  );
-
-  return res.status(200).json({
-    success: true,
-    message: "Task updated successfully",
-    task: updatedTask,
+  const updatedTask = await TaskService.update({
+    id: `${task_id}`,
+    userId: userId,
+    data: req.body, // The service handles the destructuring/guards
   });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedTask, "Task updated successfully"));
 });
 
-/**
- * @route   DELETE /tasks/:task_id
- * @desc    Deletes task and all associated subtasks
- */
+export const changeStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = getAuthUser(req);
+    const { task_id, newStatus, blockedReason } = req.body;
+
+    if (!task_id || !newStatus) {
+      throw new APIError({
+        message: "Task ID and New Status are required",
+        statusCode: 400,
+      });
+    }
+
+    const updatedTask = await TaskService.transitionStatus({
+      taskId: task_id,
+      userId: userId,
+      newStatus,
+      blockedReason: newStatus === "BLOCKED" ? blockedReason : null,
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, updatedTask, "Status transitioned successfully"),
+      );
+  },
+);
+
 export const deleteTask = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getAuthUser(req);
   const { task_id } = req.params;
-  const { user_id } = req.body;
 
-  await TaskService.deleteById({ id: `${task_id}`, user_id: `${user_id}` });
+  await TaskService.deleteById({ id: `${task_id}`, user_id: userId });
 
-  return res.status(200).json({
-    success: true,
-    message: "Task and associated subtasks deleted successfully",
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Task deleted successfully"));
 });
 
-/**
- * @route   GET /tasks/user/:user_id
- * @desc    Retrieves all tasks for a specific user
- */
 export const getTasksByUserId = asyncHandler(
   async (req: Request, res: Response) => {
-    const { user_id } = req.params;
+    const userId = getAuthUser(req); // Usually, users should only see their own tasks
+    const { limit, page } = req.query; // Use query params for pagination
 
-    // We reuse the service logic for fetching by user
-    const tasks = await TaskService.getTasksByUserId({ user_id: `${user_id}` });
-
-    return res.status(200).json({
-      success: true,
-      tasks,
+    const tasks = await TaskService.getTasksByUserId({
+      user_id: userId,
+      limit: limit as string,
+      page: page as string,
     });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, tasks, "User tasks retrieved"));
   },
 );
 
-/**
- * @route   GET /tasks/summary
- * @desc    Gets a status-based count summary for the user
- */
 export const getTaskSummary = asyncHandler(
   async (req: Request, res: Response) => {
-    const { user_id } = req.body; // Or req.user.id
-    const summary = await TaskService.summaryByUser({ user_id: `${user_id}` });
+    const userId = getAuthUser(req);
+    const summary = await TaskService.summaryByUser({ user_id: userId });
 
-    return res.status(200).json({
-      success: true,
-      summary,
+    return res
+      .status(200)
+      .json(new ApiResponse(200, summary, "Summary retrieved"));
+  },
+);
+export const uploadJsonTaskFile = asyncHandler(
+  async (req: FileRequest, res: Response) => {
+    const userId = getAuthUser(req);
+    const file = req.file;
+
+    if (!file) {
+      throw new APIError({ message: "No file uploaded", statusCode: 400 });
+    }
+
+    const content = file.buffer.toString("utf-8");
+    const parsedContent = JSON.parse(content);
+    const validatedTasks = TasksFileSchema.parse(parsedContent);
+    const normalizedTasks = validatedTasks.map((task) => ({
+      ...task,
+      due_date: new Date(task.due_date),
+      subtasks: task.subtasks.map((subtask) => ({
+        ...subtask,
+        due_date: subtask.due_date ? new Date(subtask.due_date) : undefined,
+      })),
+    }));
+
+    const results = await TaskService.bulkCreateFromJson({
+      user_id: userId,
+      payload: normalizedTasks,
     });
-  },
-);
 
-export const deleteSubtask = asyncHandler(
-  async (req: Request, _res: Response) => {
-    const { _subtask_id } = req.params;
-    const { _user_id } = req.body;
+    return res
+      .status(200)
+      .json(new ApiResponse(200, results, "Tasks uploaded successfully"));
   },
-);
-export const saveSubtask = asyncHandler(
-  async (_req: Request, _res: Response) => {},
 );

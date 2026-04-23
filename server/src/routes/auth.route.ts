@@ -24,7 +24,9 @@ import { verifySession } from "../middleware/verifysession.js";
 import { validateRequest } from "../middleware/validate.js";
 import { userUpdateSchema } from "../validation/user.js";
 import { connectGitHub, githubLogin } from "../github/github_auth.js";
-
+import { sanitizeBodyMiddleware } from "../middleware/validate.middleware.js";
+import { protectedRoute } from "../utils/protection.js";
+authRouter.use(sanitizeBodyMiddleware);
 authRouter.post(
   "/user/register",
   validateRegisterInput,
@@ -56,6 +58,11 @@ authRouter.get(
   rateLimiter({ maxTokens: 20, refillInterval: 60 }),
   githubLogin,
 );
+
+authRouter.get("/google/callback", googleAuthCallback);
+authRouter.get("/github/callback", githubAuthCallback);
+
+authRouter.use(verifySession, protectedRoute(["USER"])); // Protect all routes below this middleware
 authRouter.get(
   "/connect/github",
   verifySession,
@@ -69,8 +76,6 @@ authRouter.post(
   rateLimiter({ maxTokens: 10, refillInterval: 60 }),
   userUpdate,
 );
-authRouter.get("/google/callback", googleAuthCallback);
-authRouter.get("/github/callback", githubAuthCallback);
 
 authRouter.get("/user/logout", verifySession, logOut);
 authRouter.get("/user/authenticate", verifySession, checkAuth);

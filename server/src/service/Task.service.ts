@@ -10,8 +10,9 @@ import {
   TaskInterface,
   SubtaskInterface,
 } from "../interface/task.interface.js";
-import { checkStatusTransitionGuards } from "../helper/task.guard.js";
-import { canTransition } from "../helper/task.transition.js";
+import { Status } from "../types/status.type.js";
+import { executeTaskTransition } from "../helper/task.transition.js";
+import { SubtaskInput, TaskInput } from "../types/input.types.js";
 
 type PrismaTx = Prisma.TransactionClient;
 
@@ -31,6 +32,7 @@ export class TaskService {
       priority: task.priority as any,
       created_at: task.createdAt,
       updated_at: task.updatedAt,
+      blocked_reason: task.blockedReason ?? undefined,
     };
   }
 
@@ -76,7 +78,7 @@ export class TaskService {
           priority: payload.priority,
           source: payload.source,
           sourceId: payload.source_id,
-          githubIssueId: payload.github_issue_id || null, // Keeping GitHub support
+          githubIssueId: payload.github_issue_id || undefined, // Keeping GitHub support
         },
       });
 
@@ -115,11 +117,12 @@ export class TaskService {
       );
 
       const subtasks = tasks.flatMap((t, i) =>
-        (t.subtasks || []).map((s: any) => ({
+        (t.subtasks || []).map((s: Partial<SubtaskInterface>) => ({
           taskId: createdTasks[i].id,
           title: s.title ?? "Untitled Subtask",
           status: s.status,
           dueDate: s.due_date ? new Date(s.due_date) : new Date(),
+          description: s.description ?? "",
         })),
       );
 
@@ -155,7 +158,7 @@ export class TaskService {
         ? { name: task.user.name, email: task.user.email }
         : null,
       subtasks: task.subtasks.map(this.toLegacySubtask),
-      completed_subtasks: task.subtasks.filter((s) => s.status === "COMPLETED")
+      completed_subtasks: task.subtasks.filter((s) => s.isCompleted === true)
         .length,
       total_subtasks: task.subtasks.length,
       isOverDue: task.dueDate
@@ -196,10 +199,6 @@ export class TaskService {
       const legacyTask = this.toLegacyTask(task);
 
       // Derived fields
-      const total_subtasks = task.subtasks.length;
-      const completed_subtasks = task.subtasks.filter(
-        (s) => s.status === "COMPLETED",
-      ).length;
       const isOverDue = !!(
         task.dueDate &&
         task.dueDate < now &&
@@ -213,8 +212,10 @@ export class TaskService {
           : null,
         isOverDue,
         subtasks: task.subtasks.map(this.toLegacySubtask),
-        completed_subtasks,
-        total_subtasks,
+        completed_subtasks: task.subtasks.filter(
+          (s) => s.isCompleted === true || s.status === "SHIPPED",
+        ).length,
+        total_subtasks: task.subtasks.length,
         started_at: task.startedAt || undefined,
         lastActive: task.lastActiveAt || undefined,
         shipped_at: task.shippedAt || undefined,
@@ -235,12 +236,17 @@ export class TaskService {
       await childTx.task.delete({ where: { id, userId: user_id } });
     });
   }
-  static async update(
-    id: string,
-    userId: string,
-    data: any,
-    tx: PrismaTx = prisma as any,
-  ) {
+  static async update({
+    id,
+    userId,
+    data,
+    tx = prisma as any,
+  }: {
+    id: string;
+    userId: string;
+    data: any;
+    tx?: PrismaTx;
+  }) {
     // Use the existing transaction if provided, or start a new one
     return await (tx as any).$transaction(async (childTx: PrismaTx) => {
       // 1. Fetch existing task to check ownership and current status
@@ -253,48 +259,13 @@ export class TaskService {
         });
       }
 
-      const nextStatus = data.status ?? existing.status;
-
-      // 2. Logic Guard: Check if the state machine allows this transition (e.g., BACKLOG -> SHIPPED might be blocked)
-      const { allowed: transitionAllowed, reason: transitionReason } =
-        canTransition({
-          fromStatus: existing.status,
-          toStatus: nextStatus,
-        });
-
-      if (!transitionAllowed) {
-        throw new APIError({
-          message: transitionReason || "Invalid status transition",
-          statusCode: 400,
-          code: "INVALID_STATUS_TRANSITION",
-        });
-      }
-
-      // 3. Database Guard: Check WIP (Work-In-Progress) limits
-      const validationResult = await checkStatusTransitionGuards({
-        tx: childTx,
-        taskId: id,
-        fromStatus: existing.status,
-        toStatus: nextStatus,
-        userId,
-      });
-
-      if (!validationResult.allowed) {
-        throw new APIError({
-          message: validationResult.reason || "Status transition not allowed",
-          statusCode: 400,
-          code: "WIP_LIMIT_EXCEEDED",
-        });
-      }
-
-      // 4. Update parent task
+      // 2. Update parent task
       await childTx.task.update({
         where: { id },
         data: {
           title: data.title ?? existing.title,
           description: data.description ?? existing.description,
           dueDate: data.due_date ?? existing.dueDate,
-          status: nextStatus,
           priority: data.priority ?? existing.priority,
         },
       });
@@ -320,6 +291,78 @@ export class TaskService {
       // 6. Return refreshed details using the same transaction
       return this.taskDetails({ id, user_id: userId, tx: childTx });
     });
+  }
+  static async transitionStatus({
+    taskId,
+    userId,
+    newStatus,
+    blockedReason,
+  }: {
+    taskId: string;
+    userId: string;
+    newStatus: Status;
+    blockedReason?: string;
+  }): Promise<TaskInterface> {
+    const transitionResult = await executeTaskTransition({
+      taskId,
+      userId,
+      newStatus,
+      blockedReason,
+    });
+    return this.toLegacyTask(transitionResult);
+  }
+  static async bulkCreateFromJson({
+    user_id,
+    payload,
+    tx = prisma,
+  }: {
+    tx?: PrismaTx;
+    user_id: string;
+    payload: Partial<TaskInput>[];
+  }) {
+    const results = await tx.$transaction(async (childTx: PrismaTx) => {
+      const taskArray = Array.isArray(payload) ? payload : [];
+      const tasksToCreate = taskArray.map((task) => ({
+        userId: user_id,
+        projectId: task.project_id || null,
+        title: task.title ?? "Untitled Task",
+        description: task.description ?? "",
+        dueDate: task.due_date ? new Date(task.due_date) : new Date(),
+        status: task.status || "PLANNED",
+        priority: task.priority || "MEDIUM",
+      }));
+
+      const createdTasks = await Promise.all(
+        tasksToCreate.map((taskData) =>
+          childTx.task.create({
+            data: taskData,
+          }),
+        ),
+      );
+
+      const subTasks = taskArray.flatMap((task, index) =>
+        (task.subtasks || []).map((sub: Partial<SubtaskInput>) => ({
+          taskId: createdTasks[index].id,
+          title: sub.title ?? "Untitled Subtask",
+          description: sub.description ?? "",
+          status: sub.status || "PLANNED",
+          dueDate: sub.due_date ? new Date(sub.due_date) : new Date(),
+        })),
+      );
+
+      if (subTasks.length > 0) {
+        await childTx.subtask.createMany({ data: subTasks });
+      }
+      const updatedTasksList = await tx.task.findMany({
+        where: { userId: user_id },
+        include: { subtasks: true },
+      });
+      return updatedTasksList.map((task) => ({
+        ...this.toLegacyTask(task),
+        subtasks: task.subtasks.map(this.toLegacySubtask),
+      }));
+    });
+    return { success: true, tasks: results };
   }
 
   static async findByGithubIssue({
@@ -468,8 +511,7 @@ export class Task {
     | "IN_PROGRESS"
     | "IN_REVIEW"
     | "SHIPPED"
-    | "BLOCKED"
-    | "COMPLETED";
+    | "BLOCKED";
   priority!: "LOW" | "MEDIUM" | "HIGH";
   user_id!: string;
   project_id?: string;
@@ -485,8 +527,6 @@ export class Task {
         return "SHIPPED" as const;
       case "PLANNED":
         return "PLANNED" as const;
-      case "COMPLETED":
-        return "COMPLETED" as const;
       default:
         return "BACKLOG" as const;
     }
@@ -500,8 +540,7 @@ export class Task {
         return "SHIPPED" as const;
       case "PLANNED":
         return "PLANNED" as const;
-      case "COMPLETED":
-        return "COMPLETED" as const;
+
       default:
         return "BACKLOG" as const;
     }
@@ -707,12 +746,7 @@ export class Task {
         title?: string;
         description?: string;
         dueDate?: Date;
-        status?:
-          | "BACKLOG"
-          | "IN_PROGRESS"
-          | "SHIPPED"
-          | "PLANNED"
-          | "COMPLETED";
+        status?: "BACKLOG" | "IN_PROGRESS" | "SHIPPED" | "PLANNED";
         priority?: "LOW" | "MEDIUM" | "HIGH";
         userId?: string;
         projectId?: string | null;

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/requestHandler.js";
 import { pool } from "../config/db.config.js";
 import { Task } from "../service/Task.service.js";
 

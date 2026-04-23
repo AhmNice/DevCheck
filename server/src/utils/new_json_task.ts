@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "./asyncHandler.js";
+import { asyncHandler } from "./requestHandler.js";
 import { APIError } from "./errorHandler.js";
 import { SessionPayload } from "../interface/session.interface.js";
 import prisma from "../config/database.js";
